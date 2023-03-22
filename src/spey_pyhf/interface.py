@@ -1,6 +1,6 @@
 """pyhf plugin for spey interface"""
 
-from typing import Optional, Tuple, List, Text, Callable
+from typing import Optional, List, Text, Union, Callable
 import logging, pyhf
 import numpy as np
 
@@ -9,7 +9,6 @@ from pyhf.infer.calculators import generate_asimov_data
 from spey.utils import ExpectationType
 from spey.base.backend_base import BackendBase, DataBase
 from spey.base.recorder import Recorder
-from spey.optimizer import fit
 from .utils import twice_nll_func
 from .pyhfdata import PyhfData, PyhfDataWrapper
 from ._version import __version__
@@ -74,18 +73,11 @@ class PyhfInterface(BackendBase):
     spey_requires = "0.0.1"
     datastructure = PyhfDataWrapper
 
-    __slots__ = ["_model", "_recorder", "_asimov_nuisance"]
+    __slots__ = ["_model"]
 
     def __init__(self, model: PyhfData):
-        assert isinstance(model, PyhfData) and isinstance(
-            model, DataBase
-        ), "Invalid statistical model."
+        assert isinstance(model, PyhfData), "Invalid statistical model."
         self._model = model
-        self._recorder = Recorder()
-        self._asimov_nuisance = {
-            str(ExpectationType.observed): False,
-            str(ExpectationType.apriori): False,
-        }
 
     @property
     def model(self) -> PyhfData:
@@ -94,170 +86,58 @@ class PyhfInterface(BackendBase):
 
     def generate_asimov_data(
         self,
-        model: pyhf.pdf.Model,
-        data: np.ndarray,
+        expected: ExpectationType = ExpectationType.observed,
         test_statistics: Text = "qtilde",
+        **kwargs,
     ) -> np.ndarray:
         """
-        Generate asimov data for the statistical model (only valid for teststat = qtilde)
+        Method to generate Asimov data for given statistical model
 
-        :param model: statistical model
-        :param data: data
-        :param expected: observed, apriori or aposteriori
-        :return: asimov data
+        :param expected (`ExpectationType`, default `ExpectationType.observed`): observed, apriori, aposteriori.
+        :param test_statistics (`Text`, default `"qtilde"`): definition of test statistics. `q`, `qtilde` or `q0`
+        :raises `NotImplementedError`: if the method has not been implemented
+        :return ` Union[List[float], np.ndarray]`: Asimov data
         """
-        # asimov_nuisance_key = (
-        #     str(ExpectationType.apriori)
-        #     if expected == ExpectationType.apriori
-        #     else str(ExpectationType.observed)
-        # )
-        asimov_data = False  # self._asimov_nuisance.get(asimov_nuisance_key, False)
-        if asimov_data is False:
-            asimov_data = generate_asimov_data(
-                1.0 if test_statistics == "q0" else 0.0,
-                data,
-                model,
-                model.config.suggested_init(),
-                model.config.suggested_bounds(),
-                model.config.suggested_fixed(),
-                return_fitted_pars=False,
-            )
-            # self._asimov_nuisance[asimov_nuisance_key] = copy.deepcopy(asimov_data)
+        _, model, data = self.model(expected=expected)
+
+        asimov_data = generate_asimov_data(
+            1.0 if test_statistics == "q0" else 0.0,
+            data,
+            model,
+            model.config.suggested_init(),
+            model.config.suggested_bounds(),
+            model.config.suggested_fixed(),
+            return_fitted_pars=False,
+        )
+
         return asimov_data
 
-    def negative_loglikelihood(
+    def get_twice_nll_func(
         self,
-        poi_test: float = 1.0,
         expected: ExpectationType = ExpectationType.observed,
-        init_pars: Optional[List[float]] = None,
-        par_bounds: Optional[List[Tuple[float, float]]] = None,
-        **kwargs,
-    ) -> Tuple[float, np.ndarray]:
+        data: Optional[Union[List[float], np.ndarray]] = None,
+    ) -> Callable[[np.ndarray], float]:
         """
-        Compute negative log-likelihood of the statistical model
+        Generate function to compute twice negative log-likelihood for the statistical model
 
-        :param poi_test (`float`, default `1.0`): parameter of interest.
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): expectation type.
-            observed, apriori or aposteriori
-        :param init_pars (`Optional[List[float]]`, default `None`): initial fit parameters.
-        :param par_bounds (`Optional[List[Tuple[float, float]]]`, default `None`): bounds for fit parameters.
-        :param kwargs: optimizer parameters see `spey.optimizer.scipy_tools.minimize`
-        :return `Tuple[float, np.ndarray]`: negative log-likelihood and fit parameters
+        :param expected (`ExpectationType`, default `ExpectationType.observed`): observed, apriori, aposteriori.
+        :param data (`Union[List[float], np.ndarray]`, default `None`): observed data to be used for nll computation.
+        :raises `NotImplementedError`: If the method is not implemented
+        :return `Callable[[np.ndarray], float]`: function to compute twice negative log-likelihood for given nuisance parameters.
         """
         # CHECK THE MODEL BOUNDS!!
         # POI Test needs to be adjusted according to the boundaries for sake of convergence
         # see issue https://github.com/scikit-hep/pyhf/issues/620#issuecomment-579235311
         # comment https://github.com/scikit-hep/pyhf/issues/620#issuecomment-579299831
         # NOTE During tests we observed that shifting poi with respect to bounds is not needed.
-        _, model, data = self.model(expected=expected)
+        _, model, data_org = self.model(expected=expected)
 
-        twice_nll, fit_pars = fit(
-            func=twice_nll_func(model, data),
-            model_configuration=self.model.config(),
-            initial_parameters=init_pars,
-            bounds=par_bounds,
-            fixed_poi_value=poi_test,
-            **kwargs,
-        )
+        return twice_nll_func(model, data if data is not None else data_org)
 
-        return twice_nll / 2.0, fit_pars
-
-    def asimov_negative_loglikelihood(
-        self,
-        poi_test: float = 1.0,
-        expected: ExpectationType = ExpectationType.observed,
-        test_statistics: Text = "qtilde",
-        init_pars: Optional[List[float]] = None,
-        par_bounds: Optional[List[Tuple[float, float]]] = None,
-        **kwargs,
-    ) -> Tuple[float, np.ndarray]:
-        """
-        Compute negative log-likelihood of the statistical model for Asimov data
-
-        :param poi_test (`float`, default `1.0`): parameter of interest.
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): expectation type.
-            observed, apriori or aposteriori
-        :param init_pars (`Optional[List[float]]`, default `None`): initial fit parameters.
-        :param par_bounds (`Optional[List[Tuple[float, float]]]`, default `None`): bounds for fit parameters.
-        :param kwargs: optimizer parameters see `spey.optimizer.scipy_tools.minimize`
-        :return `Tuple[float, np.ndarray]`: negative log-likelihood and fit parameters
-        """
-        # Asimov llhd is only computed for poi = 1 or 0, control is not necessary
-        _, model, data = self.model(expected=expected)
-        data = self.generate_asimov_data(model=model, data=data, test_statistics=test_statistics)
-
-        twice_nll, fit_pars = fit(
-            func=twice_nll_func(model, data),
-            model_configuration=self.model.config(),
-            initial_parameters=init_pars,
-            bounds=par_bounds,
-            fixed_poi_value=poi_test,
-            **kwargs,
-        )
-
-        return twice_nll / 2.0, fit_pars
-
-    def minimize_negative_loglikelihood(
+    def get_gradient_twice_nll_func(
         self,
         expected: ExpectationType = ExpectationType.observed,
-        allow_negative_signal: bool = True,
-        init_pars: Optional[List[float]] = None,
-        par_bounds: Optional[List[Tuple[float, float]]] = None,
-        **kwargs,
-    ) -> Tuple[float, np.ndarray]:
-        r"""
-        Compute minimum of negative log-likelihood for a given statistical model
-
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): expectation type.
-            observed, apriori or aposteriori.
-        :param allow_negative_signal (`bool`, default `True`): if True $\hat\mu$ values will allowed to be negative.
-        :param init_pars (`Optional[List[float]]`, default `None`): initial fit parameters.
-        :param par_bounds (`Optional[List[Tuple[float, float]]]`, default `None`): bounds for fit parameters.
-        :param kwargs: optimizer parameters see `spey.optimizer.scipy_tools.minimize`
-        :return `Tuple[float, np.ndarray]`: minimum of negative log-likelihood and fit parameters
-        """
-        _, model, data = self.model(expected=expected)
-
-        twice_nll, fit_pars = fit(
-            func=twice_nll_func(model, data),
-            model_configuration=self.model.config(allow_negative_signal=allow_negative_signal),
-            initial_parameters=init_pars,
-            bounds=par_bounds,
-            **kwargs,
-        )
-
-        return twice_nll / 2.0, fit_pars
-
-    def minimize_asimov_negative_loglikelihood(
-        self,
-        expected: ExpectationType = ExpectationType.observed,
-        test_statistics: Text = "qtilde",
-        init_pars: Optional[List[float]] = None,
-        par_bounds: Optional[List[Tuple[float, float]]] = None,
-        **kwargs,
-    ) -> Tuple[float, np.ndarray]:
-        r"""
-        Compute minimum of negative log-likelihood for a given statistical model for the Asimov data
-
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): expectation type.
-            observed, apriori or aposteriori.
-        :param allow_negative_signal (`bool`, default `True`): if True $\hat\mu$ values will allowed to be negative.
-        :param init_pars (`Optional[List[float]]`, default `None`): initial fit parameters.
-        :param par_bounds (`Optional[List[Tuple[float, float]]]`, default `None`): bounds for fit parameters.
-        :param kwargs: optimizer parameters see `spey.optimizer.scipy_tools.minimize`
-        :return `Tuple[float, np.ndarray]`: minimum of negative log-likelihood and fit parameters
-        """
-        _, model, data = self.model(poi_test=1.0, expected=expected)
-        data = self.generate_asimov_data(model, data=data, test_statistics=test_statistics)
-
-        twice_nll, fit_pars = fit(
-            func=twice_nll_func(model, data),
-            model_configuration=self.model.config(
-                allow_negative_signal=test_statistics in ["q", "qmu", "q0"]
-            ),
-            initial_parameters=init_pars,
-            bounds=par_bounds,
-            **kwargs,
-        )
-
-        return twice_nll / 2.0, fit_pars
+        data: Optional[Union[List[float], np.ndarray]] = None,
+    ) -> Callable[[np.ndarray], float]:
+        # Currently not implemented
+        return None
