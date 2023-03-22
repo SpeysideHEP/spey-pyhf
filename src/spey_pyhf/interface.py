@@ -7,8 +7,7 @@ import numpy as np
 from pyhf.infer.calculators import generate_asimov_data
 
 from spey.utils import ExpectationType
-from spey.base.backend_base import BackendBase, DataBase
-from spey.base.recorder import Recorder
+from spey.base.backend_base import BackendBase
 from .utils import twice_nll_func
 from .pyhfdata import PyhfData, PyhfDataWrapper
 from ._version import __version__
