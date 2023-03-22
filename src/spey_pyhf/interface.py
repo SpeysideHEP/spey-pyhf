@@ -23,10 +23,9 @@ pyhf.set_backend("numpy", precision="64b")
 
 class PyhfInterface(BackendBase):
     """
-    Pyhf Interface. This is object has been wrapped with `StatisticalModel` class to ensure
-    universality across all platforms.
+    pyhf Interface.
 
-    :param model: contains all the information regarding the regions, yields
+    :param model (`PyhfData`): contains all the information regarding the regions, yields
     :raises AssertionError: if the input type is wrong.
 
     .. code-block:: python3
@@ -73,6 +72,7 @@ class PyhfInterface(BackendBase):
     version = __version__
     author = "SpeysideHEP"
     spey_requires = "0.0.1"
+    datastructure = PyhfDataWrapper
 
     __slots__ = ["_model", "_recorder", "_asimov_nuisance"]
 
@@ -86,11 +86,6 @@ class PyhfInterface(BackendBase):
             str(ExpectationType.observed): False,
             str(ExpectationType.apriori): False,
         }
-
-    @staticmethod
-    def datastructure() -> Callable:
-        """Retreive the function to construct the datastructure for the statistical model"""
-        return PyhfDataWrapper
 
     @property
     def model(self) -> PyhfData:
