@@ -66,10 +66,11 @@ class PyhfInterface(BackendBase):
         >>> # [0.9973937390501324, 0.9861799464393675, 0.9355467946443513, 0.7647435613928496, 0.4269637940897122]
     """
 
-    name = "pyhf"
-    version = __version__
-    author = "SpeysideHEP"
-    spey_requires = "0.0.1"
+    name: Text = "pyhf"
+    version: Text = __version__
+    author: Text = "SpeysideHEP"
+    spey_requires: Text = "0.0.1"
+    doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     datastructure = PyhfDataWrapper
 
     __slots__ = ["_model"]
