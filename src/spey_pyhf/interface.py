@@ -134,10 +134,24 @@ class PyhfInterface(BackendBase):
 
         return twice_nll_func(model, data if data is not None else data_org)
 
-    def get_gradient_twice_nll_func(
-        self,
-        expected: ExpectationType = ExpectationType.observed,
-        data: Optional[Union[List[float], np.ndarray]] = None,
-    ) -> Callable[[np.ndarray], float]:
-        # Currently not implemented
-        return None
+    def get_sampler(self, pars: np.ndarray) -> Callable[[int], np.ndarray]:
+        """
+        Initialize a sampling function with the statistical model
+
+        :param pars (`np.ndarray`): nuisance parameters
+        :return `Callable[[int], np.ndarray]`: returns function to sample from
+            a preconfigured statistical model
+        """
+        _, model, _ = self.model()
+        pdf = model.make_pdf(pyhf.tensorlib.astensor(pars))
+
+        def sampler(number_of_samples: int) -> np.ndarray:
+            """
+            Sample generator for the statistical model
+
+            :param number_of_samples (`int`): number of samples to be drawn from the model
+            :return `np.ndarray`: Sampled observations
+            """
+            return pdf.sample((number_of_samples,))
+
+        return sampler
