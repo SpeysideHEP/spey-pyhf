@@ -1,22 +1,16 @@
 """pyhf plugin for spey interface"""
 
-from typing import Optional, List, Text, Union, Callable
-import logging, pyhf
+from typing import Optional, List, Text, Union, Callable, Tuple
 import numpy as np
-
-from pyhf.infer.calculators import generate_asimov_data
 
 from spey.utils import ExpectationType
 from spey.base.backend_base import BackendBase
-from .utils import twice_nll_func
 from .pyhfdata import PyhfData, PyhfDataWrapper
+from .utils import objective_wrapper
 from ._version import __version__
+from . import manager
 
 __all__ = ["PyhfInterface"]
-
-pyhf.pdf.log.setLevel(logging.CRITICAL)
-pyhf.workspace.log.setLevel(logging.CRITICAL)
-pyhf.set_backend("numpy", precision="64b")
 
 
 class PyhfInterface(BackendBase):
@@ -78,6 +72,7 @@ class PyhfInterface(BackendBase):
     def __init__(self, model: PyhfData):
         assert isinstance(model, PyhfData), "Invalid statistical model."
         self._model = model
+        self.manager = manager
 
     @property
     def model(self) -> PyhfData:
@@ -100,7 +95,7 @@ class PyhfInterface(BackendBase):
         """
         _, model, data = self.model(expected=expected)
 
-        asimov_data = generate_asimov_data(
+        asimov_data = self.manager.pyhf.infer.calculators.generate_asimov_data(
             1.0 if test_statistics == "q0" else 0.0,
             data,
             model,
@@ -112,7 +107,7 @@ class PyhfInterface(BackendBase):
 
         return asimov_data
 
-    def get_twice_nll_func(
+    def get_logpdf_func(
         self,
         expected: ExpectationType = ExpectationType.observed,
         data: Optional[Union[List[float], np.ndarray]] = None,
@@ -132,7 +127,47 @@ class PyhfInterface(BackendBase):
         # NOTE During tests we observed that shifting poi with respect to bounds is not needed.
         _, model, data_org = self.model(expected=expected)
 
-        return twice_nll_func(model, data if data is not None else data_org)
+        return lambda pars: model.logpdf(
+            pars, self.manager.pyhf.tensorlib.astensor(data_org if data is None else data)
+        )[0]
+
+    def get_hessian_logpdf_func(
+        self,
+        expected: ExpectationType = ExpectationType.observed,
+        data: Optional[Union[List[float], np.ndarray]] = None,
+    ) -> Callable[[np.ndarray], float]:
+
+        logpdf = self.get_logpdf_func(expected, data)
+
+        if self.manager.backend == "jax":
+            hess = self.manager.backend_accessor.hessian(logpdf)
+
+            def func(pars: np.ndarray) -> np.ndarray:
+                """Compute hessian of logpdf"""
+                pars = self.manager.backend_accessor.numpy.array(pars)
+                return np.array(hess(pars))
+
+            return func
+
+        raise NotImplementedError(f"Hessian is not available in {self.manager.backend} backend")
+
+    def get_objective_function(
+        self,
+        expected: ExpectationType = ExpectationType.observed,
+        data: Optional[Union[List[float], np.ndarray]] = None,
+        do_grad: bool = True,
+    ) -> Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]:
+
+        if do_grad and not self.manager.grad_available:
+            raise NotImplementedError(
+                f"Gradient is not available for {self.manager.backend} backend."
+            )
+
+        _, model, data_org = self.model(expected=expected)
+
+        return objective_wrapper(
+            data=data_org if data is None else data, pdf=model, do_grad=do_grad
+        )
 
     def get_sampler(self, pars: np.ndarray) -> Callable[[int], np.ndarray]:
         """
@@ -143,7 +178,7 @@ class PyhfInterface(BackendBase):
             a preconfigured statistical model
         """
         _, model, _ = self.model()
-        pdf = model.make_pdf(pyhf.tensorlib.astensor(pars))
+        pdf = model.make_pdf(self.manager.pyhf.tensorlib.astensor(pars))
 
         def sampler(number_of_samples: int) -> np.ndarray:
             """
@@ -152,6 +187,6 @@ class PyhfInterface(BackendBase):
             :param number_of_samples (`int`): number of samples to be drawn from the model
             :return `np.ndarray`: Sampled observations
             """
-            return pdf.sample((number_of_samples,))
+            return np.array(pdf.sample((number_of_samples,)))
 
         return sampler
