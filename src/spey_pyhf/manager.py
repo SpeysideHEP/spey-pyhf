@@ -17,7 +17,6 @@ class PyhfManager:
         PyhfManager.pyhf.workspace.log.setLevel(logging.CRITICAL)
 
         self.shim = importlib.import_module("pyhf.optimize.common").shim
-        self.backend_accessor = importlib.import_module("numpy")
 
     def __repr__(self) -> Text:
         return (
@@ -57,4 +56,8 @@ class PyhfManager:
         if backend not in self.available_backends:
             raise MethodNotAvailable(f"{backend} backend currently not available.")
         PyhfManager.pyhf.set_backend(backend)
-        self.backend_accessor = importlib.import_module(backend)
+
+    @property
+    def backend_accessor(self):
+        """access to current pyhf backend"""
+        return importlib.import_module(self.backend)
