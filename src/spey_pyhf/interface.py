@@ -5,6 +5,7 @@ import numpy as np
 
 from spey.utils import ExpectationType
 from spey.base.backend_base import BackendBase
+from spey.base import ModelConfig
 from .pyhfdata import PyhfDataWrapper, PyhfData
 from .utils import objective_wrapper
 from ._version import __version__
@@ -23,28 +24,32 @@ class PyhfInterface(BackendBase):
           three different structure:
 
           * ``List[Dict]``: This is a ``JSONPATCH`` type of input.
-          * ``float``: single float type of input will be used to create a single bin statistical model.
-            This input expects both ``data`` and ``background_yields`` inputs are ``float`` as well.
-          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin statistical
-            model. This input expects both ``data`` and ``background_yields`` inputs are ``List[float]]``
-            as well.
+          * ``float``: single float type of input will be used to create a single bin
+            statistical model. This input expects both ``data`` and ``background_yields``
+            inputs are ``float`` as well.
+          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin
+            statistical model. This input expects both ``data`` and ``background_yields`` inputs
+            are ``List[float]]`` as well.
 
         data (``Union[Dict, float, List[float]]]``): Data input can be given in three different forms:
 
-          * ``Dict``: This input is expected to be background only ``JSON`` based statistical model input.
-            Please see the details from the link above.
-          * ``float``: single float type of input will be used to create a single bin statistical model.
-            This input expects both ``signal_yields`` and ``background_yields`` inputs are ``float`` as well.
-          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin statistical
-            model. This input expects both ``signal_yields`` and ``background_yields`` inputs are ``List[float]]``
-            as well.
+          * ``Dict``: This input is expected to be background only ``JSON`` based statistical
+            model input. Please see the details from the link above.
+          * ``float``: single float type of input will be used to create a single bin
+            statistical model. This input expects both ``signal_yields`` and ``background_yields``
+            inputs are ``float`` as well.
+          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin
+            statistical model. This input expects both ``signal_yields`` and ``background_yields``
+            inputs are ``List[float]]`` as well.
 
         background_yields (``Union[float, List[float]]``, default ``None``): If ``data`` and
           ``signal_yields`` inputs are ``float`` or ``List[float]`` type, this input will be used
-          to set the SM background yields in the statistical model.
+          to set the SM background yields in the statistical model. Not used when ``signal_yields``
+          and ``data`` are in ``JSON`` format.
         absolute_background_unc (``Union[float, List[float]]``, default ``None``): If ``data`` and
           ``signal_yields`` inputs are ``float`` or ``List[float]`` type, this input will be used
-          to set the absolute uncertainties in the SM background.
+          to set the absolute uncertainties in the SM background. Not used when ``signal_yields``
+          and ``data`` are in ``JSON`` format.
 
     Example:
 
@@ -130,6 +135,27 @@ class PyhfInterface(BackendBase):
     def model(self) -> PyhfData:
         """Retreive statistical model container"""
         return self._model
+
+    def config(
+        self, allow_negative_signal: bool = True, poi_upper_bound: float = 10.0
+    ) -> ModelConfig:
+        r"""
+        Model configuration.
+
+        Args:
+            allow_negative_signal (``bool``, default ``True``): If ``True`` :math:`\hat\mu`
+              value will be allowed to be negative.
+            poi_upper_bound (``float``, default ``40.0``): upper bound for parameter
+              of interest, :math:`\mu`.
+
+        Returns:
+            ~spey.base.ModelConfig:
+            Model configuration. Information regarding the position of POI in
+            parameter list, suggested input and bounds.
+        """
+        return self.model.config(
+            allow_negative_signal=allow_negative_signal, poi_upper_bound=poi_upper_bound
+        )
 
     def generate_asimov_data(
         self,

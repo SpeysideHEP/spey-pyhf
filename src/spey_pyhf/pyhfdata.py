@@ -7,7 +7,6 @@ from pyhf import Workspace, Model
 
 from spey.utils import ExpectationType
 from spey.system.exceptions import NegativeExpectedYields
-from spey.base import DataBase
 from spey.base import ModelConfig
 from .utils import initialise_workspace
 
@@ -60,7 +59,7 @@ def PyhfDataWrapper(
 
 
 @dataclass(frozen=True)
-class PyhfData(DataBase):
+class PyhfData:
     """
     Dataclass for pyhf interface
 
