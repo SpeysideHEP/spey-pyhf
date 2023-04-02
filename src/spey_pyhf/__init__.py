@@ -4,7 +4,7 @@ __all__ = ["manager"]
 
 
 def __dir__():
-    return __all__
+    return []
 
 
 manager = PyhfManager()

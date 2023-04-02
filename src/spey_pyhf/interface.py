@@ -1,11 +1,11 @@
 """pyhf plugin for spey interface"""
 
-from typing import Optional, List, Text, Union, Callable, Tuple
+from typing import Optional, List, Text, Union, Callable, Tuple, Dict
 import numpy as np
 
 from spey.utils import ExpectationType
 from spey.base.backend_base import BackendBase
-from .pyhfdata import PyhfData, PyhfDataWrapper
+from .pyhfdata import PyhfDataWrapper, PyhfData
 from .utils import objective_wrapper
 from ._version import __version__
 from . import manager
@@ -15,68 +15,120 @@ __all__ = ["PyhfInterface"]
 
 class PyhfInterface(BackendBase):
     """
-    pyhf Interface.
+    pyhf Interface. For details on input structure please see
+    `this link <https://pyhf.readthedocs.io/en/v0.7.0/likelihood.html>`_
 
-    :param model (`PyhfData`): contains all the information regarding the regions, yields
-    :raises AssertionError: if the input type is wrong.
+    Args:
+        signal_yields (``Union[List[Dict], float, List[float]]``): Signal yields can be given in
+          three different structure:
 
-    .. code-block:: python3
+          * ``List[Dict]``: This is a ``JSONPATCH`` type of input.
+          * ``float``: single float type of input will be used to create a single bin statistical model.
+            This input expects both ``data`` and ``background_yields`` inputs are ``float`` as well.
+          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin statistical
+            model. This input expects both ``data`` and ``background_yields`` inputs are ``List[float]]``
+            as well.
 
-        >>> from spey.backends.pyhf_backend.data import SLData
-        >>> from spey.backends.pyhf_backend.interface import PyhfInterface
-        >>> from spey import ExpectationType
-        >>> background = {
-        >>>   "channels": [
-        >>>     { "name": "singlechannel",
-        >>>       "samples": [
-        >>>         { "name": "background",
-        >>>           "data": [50.0, 52.0],
-        >>>           "modifiers": [{ "name": "uncorr_bkguncrt", "type": "shapesys", "data": [3.0, 7.0]}]
-        >>>         }
-        >>>       ]
-        >>>     }
-        >>>   ],
-        >>>   "observations": [{"name": "singlechannel", "data": [51.0, 48.0]}],
-        >>>   "measurements": [{"name": "Measurement", "config": { "poi": "mu", "parameters": []} }],
-        >>>   "version": "1.0.0"
-        >>> }
-        >>> signal = [{"op": "add",
-        >>>     "path": "/channels/0/samples/1",
-        >>>     "value": {"name": "signal", "data": [12.0, 11.0],
-        >>>       "modifiers": [{"name": "mu", "type": "normfactor", "data": None}]}}]
-        >>> model = SLData(signal=signal, background=background)
-        >>> statistical_model = PyhfInterface(model=model, xsection=1.0, analysis="my_analysis")
-        >>> print(statistical_model)
-        >>> # StatisticalModel(analysis='my_analysis', xsection=1.000e+00 [pb], backend=pyhf)
-        >>> statistical_model.exclusion_confidence_level()
-        >>> # [0.9474850257628679] # 1-CLs
-        >>> statistical_model.s95exp
-        >>> # 1.0685773410460155 # prefit excluded cross section in pb
-        >>> statistical_model.maximize_likelihood()
-        >>> # (-0.0669277855002002, 12.483595567080783) # muhat and maximum negative log-likelihood
-        >>> statistical_model.likelihood(poi_test=1.5)
-        >>> # 16.59756909879556
-        >>> statistical_model.exclusion_confidence_level(expected=ExpectationType.aposteriori)
-        >>> # [0.9973937390501324, 0.9861799464393675, 0.9355467946443513, 0.7647435613928496, 0.4269637940897122]
+        data (``Union[Dict, float, List[float]]]``): Data input can be given in three different forms:
+
+          * ``Dict``: This input is expected to be background only ``JSON`` based statistical model input.
+            Please see the details from the link above.
+          * ``float``: single float type of input will be used to create a single bin statistical model.
+            This input expects both ``signal_yields`` and ``background_yields`` inputs are ``float`` as well.
+          * ``List[float]]``: This input type will be used to create an uncorrelated multi-bin statistical
+            model. This input expects both ``signal_yields`` and ``background_yields`` inputs are ``List[float]]``
+            as well.
+
+        background_yields (``Union[float, List[float]]``, default ``None``): If ``data`` and
+          ``signal_yields`` inputs are ``float`` or ``List[float]`` type, this input will be used
+          to set the SM background yields in the statistical model.
+        absolute_background_unc (``Union[float, List[float]]``, default ``None``): If ``data`` and
+          ``signal_yields`` inputs are ``float`` or ``List[float]`` type, this input will be used
+          to set the absolute uncertainties in the SM background.
+
+    Example:
+
+    .. code_block:: python3
+        :linenos:
+
+        >>> import spey
+
+        >>> background_only = {
+        ...     "channels": [
+        ...         {
+        ...             "name": "singlechannel",
+        ...             "samples": [
+        ...                 {
+        ...                     "name": "background",
+        ...                     "data": [50.0, 52.0],
+        ...                     "modifiers": [
+        ...                         {
+        ...                             "name": "uncorr_bkguncrt",
+        ...                             "type": "shapesys",
+        ...                             "data": [3.0, 7.0],
+        ...                         }
+        ...                     ],
+        ...                 }
+        ...             ],
+        ...         }
+        ...     ],
+        ...     "observations": [{"name": "singlechannel", "data": [51.0, 48.0]}],
+        ...     "measurements": [{"name": "Measurement", "config": {"poi": "mu", "parameters": []}}],
+        ...     "version": "1.0.0",
+        ... }
+        >>> signal = [
+        ...     {
+        ...         "op": "add",
+        ...         "path": "/channels/0/samples/1",
+        ...         "value": {
+        ...             "name": "signal",
+        ...             "data": [12.0, 11.0],
+        ...             "modifiers": [{"name": "mu", "type": "normfactor", "data": None}],
+        ...         },
+        ...     }
+        ... ]
+        >>> statistical_model = spey.get_correlated_nbin_statistical_model(
+        ...     analysis="simple_pyhf",
+        ...     data=background_only,
+        ...     signal_yields=signal,
+        ... )
+        >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
     """
 
     name: Text = "pyhf"
+    """Name of the backend"""
     version: Text = __version__
+    """Version of the backend"""
     author: Text = "SpeysideHEP"
+    """Author of the backend"""
     spey_requires: Text = "0.0.1"
+    """Spey version required for the backend"""
     doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
-    datastructure = PyhfDataWrapper
+    """Citable DOI for the backend"""
 
-    __slots__ = ["_model"]
+    __slots__ = ["_model", "manager"]
 
-    def __init__(self, model: PyhfData):
-        assert isinstance(model, PyhfData), "Invalid statistical model."
-        self._model = model
+    def __init__(
+        self,
+        signal_yields: Union[List[Dict], float, List[float]],
+        data: Union[Dict, float, List[float]],
+        background_yields: Optional[Union[float, List[float]]] = None,
+        absolute_background_unc: Optional[Union[float, List[float]]] = None,
+    ):
+        self._model = PyhfDataWrapper(
+            signal=signal_yields,
+            background=data,
+            nb=background_yields,
+            delta_nb=absolute_background_unc,
+            default_expectation=ExpectationType.observed,
+            name="pyhf_model",
+        )
         self.manager = manager
+        """pyhf Manager to handle the interface with pyhf"""
 
     @property
     def model(self) -> PyhfData:
-        """Retrieve statistical model"""
+        """Retreive statistical model container"""
         return self._model
 
     def generate_asimov_data(
@@ -149,7 +201,9 @@ class PyhfInterface(BackendBase):
 
             return func
 
-        raise NotImplementedError(f"Hessian is not available in {self.manager.backend} backend")
+        raise NotImplementedError(
+            f"Hessian is not available in {self.manager.backend} backend"
+        )
 
     def get_objective_function(
         self,
