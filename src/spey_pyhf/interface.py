@@ -159,26 +159,45 @@ class PyhfInterface(BackendBase):
 
     def generate_asimov_data(
         self,
+        poi_asimov: float = 0.0,
         expected: ExpectationType = ExpectationType.observed,
-        test_statistics: Text = "qtilde",
         **kwargs,
     ) -> np.ndarray:
-        """
-        Method to generate Asimov data for given statistical model
+        r"""
+        Backend specific method to generate Asimov data.
 
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): observed, apriori, aposteriori.
-        :param test_statistics (`Text`, default `"qtilde"`): definition of test statistics. `q`, `qtilde` or `q0`
-        :raises `NotImplementedError`: if the method has not been implemented
-        :return ` Union[List[float], np.ndarray]`: Asimov data
+        Args:
+            expected (~spey.ExpectationType): Sets which values the fitting algorithm should focus and
+              p-values to be computed.
+
+              * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
+                prescriotion which means that the experimental data will be assumed to be the truth
+                (default).
+              * :obj:`~spey.ExpectationType.aposteriori`: Computes the expected p-values with via
+                post-fit prescriotion which means that the experimental data will be assumed to be
+                the truth.
+              * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
+                prescription which means that the SM will be assumed to be the truth.
+
+            kwargs: keyword arguments for the optimiser.
+
+        Returns:
+            ``List[float]``:
+            Asimov data.
         """
         _, model, data = self.model(expected=expected)
 
+        par_bounds = [
+            *(kwargs.get("par_bounds", None) or model.config.suggested_bounds())
+        ]
+        init_pars = [*(kwargs.get("init_pars", None) or model.config.suggested_init())]
+
         asimov_data = self.manager.pyhf.infer.calculators.generate_asimov_data(
-            1.0 if test_statistics == "q0" else 0.0,
+            poi_asimov,
             data,
             model,
-            model.config.suggested_init(),
-            model.config.suggested_bounds(),
+            init_pars,
+            par_bounds,
             model.config.suggested_fixed(),
             return_fitted_pars=False,
         )
