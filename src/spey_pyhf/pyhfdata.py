@@ -42,7 +42,12 @@ def PyhfDataWrapper(
         data,
         minimum_poi,
     ) = initialise_workspace(
-        signal, background, nb, delta_nb, expected=default_expectation, return_full_data=True
+        signal,
+        background,
+        nb,
+        delta_nb,
+        expected=default_expectation,
+        return_full_data=True,
     )
     return PyhfData(
         signal=new_signal,
@@ -103,13 +108,16 @@ class PyhfData:
         bounds = self._model.config.suggested_bounds()
         bounds[self._model.config.poi_index] = (
             self._minimum_poi if allow_negative_signal else 0.0,
-            bounds[self._model.config.poi_index][1] if not poi_upper_bound else poi_upper_bound,
+            bounds[self._model.config.poi_index][1]
+            if not poi_upper_bound
+            else poi_upper_bound,
         )
         return ModelConfig(
             poi_index=self._model.config.poi_index,
             minimum_poi=self._minimum_poi,
             suggested_init=self._model.config.suggested_init(),
             suggested_bounds=bounds,
+            parameter_names=self._model.config.par_names,
         )
 
     def __call__(
@@ -163,7 +171,9 @@ class PyhfData:
                     raise NegativeExpectedYields(
                         "PyhfInterface::Statistical model involves negative expected bin yields. "
                         "Bin value: "
-                        + ", ".join([f"{x:.3f}" for x in (signal + self.background).tolist()])
+                        + ", ".join(
+                            [f"{x:.3f}" for x in (signal + self.background).tolist()]
+                        )
                     )
             else:
                 for channel in model.spec.get("channels", []):

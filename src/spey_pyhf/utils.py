@@ -34,24 +34,32 @@ def initialise_workspace(
     """
     Construct the statistical model with respect to the given inputs.
 
-    :param signal (`Union[List[float], List[Dict]]`): number of signal events or json patch
-    :param background (`Union[Dict, List[float]]`): number of observed events or json dictionary
-    :param nb (`Optional[List[float]]`, default `None`): number of expected background events (MC).
-    :param delta_nb (`Optional[List[float]]`, default `None`): uncertainty on expected background events.
-    :param expected (`ExpectationType`, default `ExpectationType.observed`):
-                                                                    observed, apriori or aposteriori.
-    :param return_full_data (`bool`, default `False`): if true, returns input values as well.
-    :raises `InvalidInput`: if input types are not correctly initialised
-    :return `Union[ tuple[ Union[list, Any], Union[Optional[dict], Any],
-    Optional[Any], Optional[Any], Optional[Workspace], Any, Any,
-    Union[Union[int, float, complex], Any], ],
-    tuple[Optional[Workspace], Any, Any], ]`: Workspace(can be none in simple case), model, data
+    Args:
+        signal (``Union[List[float], List[Dict]]``): signal yields
+        background (``Union[Dict, List[float]]``): background yields or background only json file
+        nb (``Optional[List[float]]``, default ``None``): number of background yields. This input
+          is only used if ``signal`` and ``background`` input are ``List[float]``.
+        delta_nb (``Optional[List[float]]``, default ``None``): uncertainty on background.This input
+          is only used if ``signal`` and ``background`` input are ``List[float]``.
+        expected (~spey.ExpectationType): Sets which values the fitting algorithm should focus and
+            p-values to be computed.
 
-    .. code-block:: python3
+            * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
+            prescriotion which means that the experimental data will be assumed to be the truth
+            (default).
+            * :obj:`~spey.ExpectationType.aposteriori`: Computes the expected p-values with via
+            post-fit prescriotion which means that the experimental data will be assumed to be
+            the truth.
+            * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
+            prescription which means that the SM will be assumed to be the truth.
+        return_full_data (``bool``, default ``False``): _description_
 
-        >>> workspace, model, data = initialise_workspace(3., 5., 4., 0.5)
+    Raises:
+        ``InvalidInput``: _description_
 
-    above example returns a simple model with a single region.
+    Returns:
+        ``Union[ tuple[ Union[list, Any], Union[Optional[dict], Any], Optional[Any], Optional[Any], Optional[manager.pyhf.Workspace], Any, Any, Union[Union[int, float, complex], Any], ], tuple[Optional[manager.pyhf.Workspace], Any, Any], ]``:
+        _description_
     """
     # Check the origin of signal
     signal_from_patch = False

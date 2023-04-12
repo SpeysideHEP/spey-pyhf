@@ -37,9 +37,13 @@ class PyhfManager:
         """
         Retreive the names of available backends
 
-        :return `List[Text]`: list of available backends
+        Returns:
+            ``List[Text]``:
+            list of available backends
         """
-        return [bd for bd in ["numpy", "tensorflow", "jax"] if importlib.util.find_spec(bd)]
+        return [
+            bd for bd in ["numpy", "tensorflow", "jax"] if importlib.util.find_spec(bd)
+        ]
 
     @property
     def backend(self) -> Text:
@@ -51,7 +55,8 @@ class PyhfManager:
         """
         Modify pyhf backend.
 
-        :param backend (`Text`): backend type. see pyhf for details
+        Args:
+            backend (`Text`): backend type. see pyhf for details
         """
         if backend not in self.available_backends:
             raise MethodNotAvailable(f"{backend} backend currently not available.")
