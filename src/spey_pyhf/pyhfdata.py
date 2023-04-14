@@ -200,10 +200,9 @@ class PyhfData:
         if isinstance(self.signal, np.ndarray):
             return np.any(self.signal > 0.0)
 
-        for channel in self.signal:
-            if channel.get("value", False):
-                if np.any([nsig > 0.0 for nsig in channel["value"].get("data", list())]):
-                    return True
+        for channel in (ch for ch in self.signal if ch.get("value", None) is not None):
+            if any(nsig > 0.0 for nsig in channel["value"].get("data", [])):
+                return True
         return False
 
     @property
