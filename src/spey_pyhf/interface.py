@@ -14,6 +14,10 @@ from . import manager
 __all__ = ["PyhfInterface"]
 
 
+def __dir__():
+    return __all__
+
+
 class PyhfInterface(BackendBase):
     """
     pyhf Interface. For details on input structure please see
@@ -181,13 +185,28 @@ class PyhfInterface(BackendBase):
         expected: ExpectationType = ExpectationType.observed,
         data: Optional[Union[List[float], np.ndarray]] = None,
     ) -> Callable[[np.ndarray], float]:
-        """
-        Generate function to compute twice negative log-likelihood for the statistical model
+        r"""
+        Generate function to compute :math:`\log\mathcal{L}(\mu, \theta)` where :math:`\mu` is the
+        parameter of interest and :math:`\theta` are nuisance parameters.
 
-        :param expected (`ExpectationType`, default `ExpectationType.observed`): observed, apriori, aposteriori.
-        :param data (`Union[List[float], np.ndarray]`, default `None`): observed data to be used for nll computation.
-        :raises `NotImplementedError`: If the method is not implemented
-        :return `Callable[[np.ndarray], float]`: function to compute twice negative log-likelihood for given nuisance parameters.
+        Args:
+            expected (~spey.ExpectationType): Sets which values the fitting algorithm should focus and
+              p-values to be computed.
+
+              * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
+                prescriotion which means that the experimental data will be assumed to be the truth
+                (default).
+              * :obj:`~spey.ExpectationType.aposteriori`: Computes the expected p-values with via
+                post-fit prescriotion which means that the experimental data will be assumed to be
+                the truth.
+              * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
+                prescription which means that the SM will be assumed to be the truth.
+            data (``Union[List[float], np.ndarray]``, default ``None``): input data that to fit
+
+        Returns:
+            ``Callable[[np.ndarray], float]``:
+            Function that takes fit parameters (:math:`\mu` and :math:`\theta`) and computes
+            :math:`\log\mathcal{L}(\mu, \theta)`.
         """
         # CHECK THE MODEL BOUNDS!!
         # POI Test needs to be adjusted according to the boundaries for sake of convergence
@@ -205,6 +224,30 @@ class PyhfInterface(BackendBase):
         expected: ExpectationType = ExpectationType.observed,
         data: Optional[Union[List[float], np.ndarray]] = None,
     ) -> Callable[[np.ndarray], float]:
+        r"""
+        Currently Hessian of :math:`\log\mathcal{L}(\mu, \theta)` is only used to compute
+        variance on :math:`\mu`. This method returns a callable function which takes fit
+        parameters (:math:`\mu` and :math:`\theta`) and returns Hessian.
+
+        Args:
+            expected (~spey.ExpectationType): Sets which values the fitting algorithm should focus and
+              p-values to be computed.
+
+              * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
+                prescriotion which means that the experimental data will be assumed to be the truth
+                (default).
+              * :obj:`~spey.ExpectationType.aposteriori`: Computes the expected p-values with via
+                post-fit prescriotion which means that the experimental data will be assumed to be
+                the truth.
+              * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
+                prescription which means that the SM will be assumed to be the truth.
+            data (``Union[List[float], np.ndarray]``, default ``None``): input data that to fit
+
+        Returns:
+            ``Callable[[np.ndarray], float]``:
+            Function that takes fit parameters (:math:`\mu` and :math:`\theta`) and
+            returns Hessian of :math:`\log\mathcal{L}(\mu, \theta)`.
+        """
 
         logpdf = self.get_logpdf_func(expected, data)
 
@@ -228,6 +271,32 @@ class PyhfInterface(BackendBase):
         data: Optional[Union[List[float], np.ndarray]] = None,
         do_grad: bool = True,
     ) -> Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]:
+        r"""
+        Objective function is the function to perform the optimisation on. This function is
+        expected to be twice negative log-likelihood, :math:`-2\log\mathcal{L}(\mu, \theta)`.
+        Additionally, if available it canbe bundled with the gradient of twice negative log-likelihood.
+
+        Args:
+            expected (~spey.ExpectationType): Sets which values the fitting algorithm should focus and
+              p-values to be computed.
+
+              * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
+                prescriotion which means that the experimental data will be assumed to be the truth
+                (default).
+              * :obj:`~spey.ExpectationType.aposteriori`: Computes the expected p-values with via
+                post-fit prescriotion which means that the experimental data will be assumed to be
+                the truth.
+              * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
+                prescription which means that the SM will be assumed to be the truth.
+            data (``Union[List[float], np.ndarray]``, default ``None``): input data that to fit
+            do_grad (``bool``, default ``True``): If ``True`` return objective and its gradient
+              as ``tuple`` (subject to availablility) if ``False`` only returns objective function.
+
+        Returns:
+            ``Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]``:
+            Function which takes fit parameters (:math:`\mu` and :math:`\theta`) and returns either
+            objective or objective and its gradient.
+        """
 
         if do_grad and not self.manager.grad_available:
             raise NotImplementedError(
@@ -241,12 +310,16 @@ class PyhfInterface(BackendBase):
         )
 
     def get_sampler(self, pars: np.ndarray) -> Callable[[int], np.ndarray]:
-        """
-        Initialize a sampling function with the statistical model
+        r"""
+        Retreives the function to sample from.
 
-        :param pars (`np.ndarray`): nuisance parameters
-        :return `Callable[[int], np.ndarray]`: returns function to sample from
-            a preconfigured statistical model
+        Args:
+            pars (:obj:`np.ndarray`): fit parameters (:math:`\mu` and :math:`\theta`)
+
+        Returns:
+            ``Callable[[int], np.ndarray]``:
+            Function that takes ``number_of_samples`` as input and draws as many samples
+            from the statistical model.
         """
         _, model, _ = self.model()
         pdf = model.make_pdf(self.manager.pyhf.tensorlib.astensor(pars))

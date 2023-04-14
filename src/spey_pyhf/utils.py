@@ -80,9 +80,13 @@ def initialise_workspace(
     elif isinstance(background, (float, list, np.ndarray)):
         background = np.array(background, dtype=np.float32).reshape(-1)
     else:
-        raise InvalidInput(f"An unexpected type of background has been presented: {background}")
+        raise InvalidInput(
+            f"An unexpected type of background has been presented: {background}"
+        )
 
-    if (bkg_from_json and not signal_from_patch) or (signal_from_patch and not bkg_from_json):
+    if (bkg_from_json and not signal_from_patch) or (
+        signal_from_patch and not bkg_from_json
+    ):
         raise InvalidInput("Signal and background types does not match.")
 
     if not bkg_from_json:
@@ -97,7 +101,9 @@ def initialise_workspace(
         if isinstance(nb, (float, list, np.ndarray)):
             nb = np.array(nb, dtype=np.float32).reshape(-1)
         else:
-            raise InvalidInput(f"An unexpected type of background has been presented: {nb}")
+            raise InvalidInput(
+                f"An unexpected type of background has been presented: {nb}"
+            )
         assert (
             len(signal) == len(background) == len(nb) == len(delta_nb)
         ), "Dimensionality of the data does not match."
@@ -120,9 +126,9 @@ def initialise_workspace(
 
             if return_full_data:
                 minimum_poi = (
-                    -np.min(np.true_divide(nb[signal != 0.0], signal[signal != 0.0])).astype(
-                        np.float32
-                    )
+                    -np.min(
+                        np.true_divide(nb[signal != 0.0], signal[signal != 0.0])
+                    ).astype(np.float32)
                     if len(signal[signal != 0.0]) > 0
                     else -np.inf
                 )
@@ -166,7 +172,9 @@ def initialise_workspace(
                     current_bkg = []
                     for ch in channel["samples"]:
                         if len(current_bkg) == 0:
-                            current_bkg = np.zeros(shape=(len(ch["data"]),), dtype=np.float32)
+                            current_bkg = np.zeros(
+                                shape=(len(ch["data"]),), dtype=np.float32
+                            )
                         current_bkg += np.array(ch["data"], dtype=np.float32)
                     min_ratio.append(
                         np.min(
@@ -179,7 +187,9 @@ def initialise_workspace(
                         else np.inf
                     )
                 minimum_poi = (
-                    -np.min(min_ratio).astype(np.float32) if len(min_ratio) > 0 else -np.inf
+                    -np.min(min_ratio).astype(np.float32)
+                    if len(min_ratio) > 0
+                    else -np.inf
                 )
 
     if return_full_data:
@@ -188,30 +198,26 @@ def initialise_workspace(
     return workspace, model, data
 
 
-def twice_nll_func(
-    model: manager.pyhf.pdf, data: List[float]
-) -> Callable[[np.ndarray], np.ndarray]:
-    """
-    Generate function to compute twice negative log-likelihood
-
-    :param model (`pyhf.pdf`): statistical model
-    :param data (`List[float]`): observations
-    :return `Callable[[np.ndarray], np.ndarray]`: function to compute
-        twice negative log-likelihood which takes fit parameters as input
-    """
-    return lambda pars: manager.pyhf.infer.mle.twice_nll(pars, data, model)
-
-
 def objective_wrapper(
     data: np.ndarray, pdf: manager.pyhf.pdf, do_grad: bool
 ) -> Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]:
     """
     Prepare objective function and its gradient
 
-    :param data (`np.ndarray`): observations
-    :param pdf (`manager.pyhf.pdf`): statistical model
-    :param do_grad (`bool`): if true objective function will also return gradient
-    :return `Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]`: objective function
+    Args:
+        data (``np.ndarray``): Input data
+        pdf (``pyhf.pdf``): statistical model
+        do_grad (``bool``): If ``True``, returns objective and gradient
+          in a tuple.
+
+    Returns:
+        ``Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]``:
+        Function to compute either only the objective function, ``do_grad=False``, or
+        alongside with its gradient, ``do_grad=True``.
+
+        .. warning::
+
+            Gradient is only available for certain pyhf backends.
     """
     minimizer_kwargs, _ = manager.shim(
         manager.pyhf.infer.mle.twice_nll,
