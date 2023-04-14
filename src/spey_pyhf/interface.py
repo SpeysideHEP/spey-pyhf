@@ -57,7 +57,7 @@ class PyhfInterface(BackendBase):
 
     Example:
 
-    .. code_block:: python3
+    .. code-block:: python3
         :linenos:
 
         >>> import spey
