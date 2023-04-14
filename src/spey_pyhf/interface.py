@@ -136,6 +136,11 @@ class PyhfInterface(BackendBase):
         """Retreive statistical model container"""
         return self._model
 
+    @property
+    def is_alive(self) -> bool:
+        """Returns True if at least one bin has non-zero signal yield."""
+        return self.model.isAlive
+
     def config(
         self, allow_negative_signal: bool = True, poi_upper_bound: float = 10.0
     ) -> ModelConfig:
