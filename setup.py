@@ -26,7 +26,12 @@ setup(
     license="MIT",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    entry_points={"spey.backend.plugins": ["pyhf = spey_pyhf.interface:PyhfInterface"]},
+    entry_points={
+        "spey.backend.plugins": [
+            "pyhf.uncorrelated_background = spey_pyhf.interface:UncorrelatedBackground",
+            "pyhf = spey_pyhf.interface:FullStatisticalModel",
+        ]
+    },
     install_requires=requirements,
     python_requires=">=3.8",
     classifiers=[

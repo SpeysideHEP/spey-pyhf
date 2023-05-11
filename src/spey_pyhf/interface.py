@@ -6,16 +6,20 @@ import numpy as np
 from spey.utils import ExpectationType
 from spey.base.backend_base import BackendBase
 from spey.base import ModelConfig
-from .pyhfdata import PyhfDataWrapper, PyhfData
 from .utils import objective_wrapper
 from ._version import __version__
 from . import manager
+from .data import Base, SimpleModelData, FullStatisticalModelData
 
-__all__ = ["PyhfInterface"]
+__all__ = ["UncorrelatedBackground", "FullStatisticalModel"]
 
 
 def __dir__():
     return __all__
+
+
+class ModelNotDefined(Exception):
+    """Undefined model exception"""
 
 
 class PyhfInterface(BackendBase):
@@ -104,7 +108,7 @@ class PyhfInterface(BackendBase):
         >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
     """
 
-    name: Text = "pyhf"
+    name: Text = "pyhf.base"
     """Name of the backend"""
     version: Text = __version__
     """Version of the backend"""
@@ -117,28 +121,16 @@ class PyhfInterface(BackendBase):
 
     __slots__ = ["_model", "manager"]
 
-    def __init__(
-        self,
-        signal_yields: Union[List[Dict], float, List[float]],
-        data: Union[Dict, float, List[float]],
-        background_yields: Optional[Union[float, List[float]]] = None,
-        absolute_background_unc: Optional[Union[float, List[float]]] = None,
-    ):
-        self._model = PyhfDataWrapper(
-            signal=signal_yields,
-            background=data,
-            nb=background_yields,
-            delta_nb=absolute_background_unc,
-            default_expectation=ExpectationType.observed,
-            name="pyhf_model",
-        )
+    def __init__(self):
         self.manager = manager
         """pyhf Manager to handle the interface with pyhf"""
 
     @property
-    def model(self) -> PyhfData:
+    def model(self) -> Base:
         """Retreive statistical model container"""
-        return self._model
+        if hasattr(self, "_model"):
+            return self._model
+        raise ModelNotDefined("Statistical model is not defined.")
 
     @property
     def is_alive(self) -> bool:
@@ -178,7 +170,7 @@ class PyhfInterface(BackendBase):
             ``List[float]``:
             Expected data of the statistical model
         """
-        return self.model._model.expected_data(pars)
+        return self.model()[1].expected_data(pars)
 
     def get_logpdf_func(
         self,
@@ -334,3 +326,121 @@ class PyhfInterface(BackendBase):
             return np.array(pdf.sample((number_of_samples,)))
 
         return sampler
+
+
+class UncorrelatedBackground(PyhfInterface):
+    """
+    This backend initiates ``pyhf.simplemodels.uncorrelated_background``, forming an uncorrelated
+    histogram structure with given inputs.
+
+    Args:
+        signal_yields (``List[float]``): signal yields
+        background_yields (``List[float]``): background yields
+        data (``List[float]``): observations
+        absolute_uncertainties (``List[float]``): absolute uncertainties on the background
+    """
+
+    name: Text = "pyhf.uncorrelated_background"
+    """Name of the backend"""
+    version: Text = __version__
+    """Version of the backend"""
+    author: Text = "SpeysideHEP"
+    """Author of the backend"""
+    spey_requires: Text = "0.0.1"
+    """Spey version required for the backend"""
+    doi: List[Text] = PyhfInterface.doi
+    """Citable DOI for the backend"""
+
+    def __init__(
+        self,
+        signal_yields: List[float],
+        background_yields: List[float],
+        data: List[int],
+        absolute_uncertainties: List[float],
+    ):
+        super().__init__()
+        self._model = SimpleModelData(
+            signal_yields, background_yields, data, absolute_uncertainties
+        )
+
+
+class FullStatisticalModel(PyhfInterface):
+    """
+    pyhf Interface. For details on input structure please see
+    `this link <https://pyhf.readthedocs.io/en/v0.7.0/likelihood.html>`_
+
+    Args:
+        signal_patch (``List[Dict]``): Patch data for signal model. please see
+            `this link <https://pyhf.readthedocs.io/en/v0.7.0/likelihood.html>`_ for details on
+            the structure of the input.
+        background_only_model (``Dict`` or ``Text``): This input expects background only data
+            that describes the full statistical model for the background. It also accepts ``str``
+            input which indicates the full path to the background only ``JSON`` file.
+
+    Example:
+
+    .. code-block:: python3
+        :linenos:
+
+        >>> import spey
+
+        >>> background_only = {
+        ...     "channels": [
+        ...         {
+        ...             "name": "singlechannel",
+        ...             "samples": [
+        ...                 {
+        ...                     "name": "background",
+        ...                     "data": [50.0, 52.0],
+        ...                     "modifiers": [
+        ...                         {
+        ...                             "name": "uncorr_bkguncrt",
+        ...                             "type": "shapesys",
+        ...                             "data": [3.0, 7.0],
+        ...                         }
+        ...                     ],
+        ...                 }
+        ...             ],
+        ...         }
+        ...     ],
+        ...     "observations": [{"name": "singlechannel", "data": [51.0, 48.0]}],
+        ...     "measurements": [{"name": "Measurement", "config": {"poi": "mu", "parameters": []}}],
+        ...     "version": "1.0.0",
+        ... }
+        >>> signal = [
+        ...     {
+        ...         "op": "add",
+        ...         "path": "/channels/0/samples/1",
+        ...         "value": {
+        ...             "name": "signal",
+        ...             "data": [12.0, 11.0],
+        ...             "modifiers": [{"name": "mu", "type": "normfactor", "data": None}],
+        ...         },
+        ...     }
+        ... ]
+        >>> statistical_model = spey.get_correlated_nbin_statistical_model(
+        ...     analysis="simple_pyhf",
+        ...     data=background_only,
+        ...     signal_yields=signal,
+        ... )
+        >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
+    """
+
+    name: Text = "pyhf"
+    """Name of the backend"""
+    version: Text = __version__
+    """Version of the backend"""
+    author: Text = "SpeysideHEP"
+    """Author of the backend"""
+    spey_requires: Text = "0.0.1"
+    """Spey version required for the backend"""
+    doi: List[Text] = PyhfInterface.doi
+    """Citable DOI for the backend"""
+
+    def __init__(
+        self,
+        signal_patch: Dict,
+        background_only_model: Union[Text, Dict],
+    ):
+        super().__init__()
+        self._model = FullStatisticalModelData(signal_patch, background_only_model)
