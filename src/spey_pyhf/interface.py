@@ -498,7 +498,7 @@ class FullStatisticalModel(PyhfInterface):
                 "The measurement name of the other statistical model will be updated. "
                 "However, if this is not the desired action please set ``update_measurements`` to ``False``."
             )
-            for idx, this_measurement in enumerate(this_workspace["measurements"]):
+            for this_measurement in this_workspace["measurements"]:
                 for idy, other_measurement in enumerate(other_workspace["measurements"]):
                     if this_measurement["name"] == other_measurement["name"]:
                         other_workspace["measurements"][idy]["name"] += "_updated"
