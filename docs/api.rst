@@ -1,5 +1,5 @@
-``pyhf`` interface
-==================
+Description of all functions and classes
+========================================
 
 
 .. currentmodule:: spey_pyhf
@@ -7,8 +7,12 @@
 .. autosummary:: 
     :toctree: _generated/
 
-    spey_pyhf.manager.PyhfManager
-    spey_pyhf.interface.ModelNotDefined
+    manager.PyhfManager
+    interface.ModelNotDefined
+    interface.CombinationError
+
+Interface
+---------
 
 .. autoclass:: spey_pyhf.interface.UncorrelatedBackground
     :members:

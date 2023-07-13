@@ -10,6 +10,7 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    :maxdepth: 2
    :caption: Contents:
 
+   quick_start
    api
 
 
