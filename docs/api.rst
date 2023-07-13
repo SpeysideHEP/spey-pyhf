@@ -1,6 +1,8 @@
 Description of all functions and classes
 ========================================
 
+Managers
+--------
 
 .. currentmodule:: spey_pyhf
 
