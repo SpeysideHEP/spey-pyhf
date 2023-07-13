@@ -3,12 +3,10 @@ from setuptools import setup, find_packages
 with open("README.md", mode="r", encoding="utf-8") as f:
     long_description = f.read()
 
-with open("requirements.txt", mode="r", encoding="UTF-8") as f:
-    requirements = f.read()
-requirements = [x for x in requirements.split("\n") if x != ""]
-
 with open("src/spey_pyhf/_version.py", mode="r", encoding="UTF-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
+
+requirements = ["pyhf==0.7.0", "spey>=0.1.0"]
 
 docs = [
     "sphinx>=6.1.3",
