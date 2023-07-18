@@ -92,6 +92,17 @@ For the rest of the functionalities please refer to the ``spey`` documentation. 
 backend agnostic structure all the functionalities of the :class:`~spey.StatisticalModel` class also
 applies to ``pyhf`` plug-in.
 
+**Arguments:**
+
+ * ``background_only_model``: This is background-only model dictionary which includes information about
+   background yields, uncertainties and observations. Details on how to construct these dictionaries can be
+   found in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.7.2/likelihood.html>`_.
+ * ``signal_patch``: This is signal patch which includes dictionaries describing which regions are going
+   to be added or removed from the statistical model.
+ * ``analysis`` (optional): Unique identifier for the analysis.
+ * ``xsection`` (optional): Cross section value for the signal hypothesis. Units determined by the user.
+
+
 Additionally this plug-in is shiped with simple uncorrelated background attachment which accesses 
 ``pyhf``'s ``uncorrelated_backgound`` function which can be accessed through spey with following function
 
@@ -116,3 +127,13 @@ Additionally this plug-in is shiped with simple uncorrelated background attachme
     ... )
 
     >>> statistical_model.exclusion_confidence_level() # [0.32907621368190676]
+
+**Arguments:**
+
+ * ``signal_yields``: signal yields as a list.
+ * ``background_yields``: background yields as a list.
+ * ``data``: observations as a list.
+ * ``absolute_uncertainties``: uncertainties on the background as a list.
+ * ``analysis`` (optional): Unique identifier for the analysis.
+ * ``xsection`` (optional): Cross section value for the signal hypothesis. Units determined by the user.
+
