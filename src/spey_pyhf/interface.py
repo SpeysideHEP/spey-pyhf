@@ -63,54 +63,6 @@ class PyhfInterface(BackendBase):
           ``signal_yields`` inputs are ``float`` or ``List[float]`` type, this input will be used
           to set the absolute uncertainties in the SM background. Not used when ``signal_yields``
           and ``data`` are in ``JSON`` format.
-
-    Example:
-
-    .. code-block:: python3
-        :linenos:
-
-        >>> import spey
-
-        >>> background_only = {
-        ...     "channels": [
-        ...         {
-        ...             "name": "singlechannel",
-        ...             "samples": [
-        ...                 {
-        ...                     "name": "background",
-        ...                     "data": [50.0, 52.0],
-        ...                     "modifiers": [
-        ...                         {
-        ...                             "name": "uncorr_bkguncrt",
-        ...                             "type": "shapesys",
-        ...                             "data": [3.0, 7.0],
-        ...                         }
-        ...                     ],
-        ...                 }
-        ...             ],
-        ...         }
-        ...     ],
-        ...     "observations": [{"name": "singlechannel", "data": [51.0, 48.0]}],
-        ...     "measurements": [{"name": "Measurement", "config": {"poi": "mu", "parameters": []}}],
-        ...     "version": "1.0.0",
-        ... }
-        >>> signal = [
-        ...     {
-        ...         "op": "add",
-        ...         "path": "/channels/0/samples/1",
-        ...         "value": {
-        ...             "name": "signal",
-        ...             "data": [12.0, 11.0],
-        ...             "modifiers": [{"name": "mu", "type": "normfactor", "data": None}],
-        ...         },
-        ...     }
-        ... ]
-        >>> statistical_model = spey.get_correlated_nbin_statistical_model(
-        ...     analysis="simple_pyhf",
-        ...     data=background_only,
-        ...     signal_yields=signal,
-        ... )
-        >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
     """
 
     name: Text = "pyhf.base"

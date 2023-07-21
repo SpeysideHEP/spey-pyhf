@@ -12,6 +12,7 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
 
    quick_start
    api
+   citations
 
 
 
