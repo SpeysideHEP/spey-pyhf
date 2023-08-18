@@ -6,7 +6,7 @@ with open("README.md", mode="r", encoding="utf-8") as f:
 with open("src/spey_pyhf/_version.py", mode="r", encoding="UTF-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
 
-requirements = ["pyhf==0.7.0", "spey>=0.1.0"]
+requirements = ["pyhf==0.7.3", "spey>=0.1.0"]
 
 docs = [
     "sphinx>=6.1.3",
