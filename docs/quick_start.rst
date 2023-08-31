@@ -137,3 +137,10 @@ Additionally this plug-in is shiped with simple uncorrelated background attachme
  * ``analysis`` (optional): Unique identifier for the analysis.
  * ``xsection`` (optional): Cross section value for the signal hypothesis. Units determined by the user.
 
+
+.. note::
+
+    `pyhf` offers an interface to combine the likelihoods that are described as JSON serialised 
+    files. This has been exploited in `spey` interface via :func:`combine` `function <https://speysidehep.github.io/spey/api.html#spey.StatisticalModel.combine>`_.
+    This function combines pyhf workspaces and adjust the signal structure accordingly. For more information
+    about how `pyhf` handles the workspace combination `see the dedicated tutorial here <https://pyhf.github.io/pyhf-tutorial/Combinations.html>`_
