@@ -270,15 +270,26 @@ class PyhfInterface(BackendBase):
             from the statistical model.
         """
         _, model, _ = self.model()
-        pdf = model.make_pdf(self.manager.pyhf.tensorlib.astensor(pars))
+        params = self.manager.pyhf.tensorlib.astensor(pars)
 
-        def sampler(number_of_samples: int) -> np.ndarray:
+        def sampler(number_of_samples: int, include_auxiliary: bool = True) -> np.ndarray:
             """
             Sample generator for the statistical model
 
-            :param number_of_samples (`int`): number of samples to be drawn from the model
-            :return `np.ndarray`: Sampled observations
+            Args:
+                number_of_samples (``int``): number of samples to be drawn from the model
+                include_auxiliary (``bool``, default ``True``): wether or not to include
+                    auxiliary data coming from the constraint model.
+
+            Returns:
+                ``np.ndarray``:
+                generated samples
             """
+            if include_auxiliary:
+                pdf = model.make_pdf(params)
+            else:
+                pdf = model.main_model.make_pdf(params)
+
             return np.array(pdf.sample((number_of_samples,)))
 
         return sampler
