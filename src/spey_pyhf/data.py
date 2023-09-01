@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple, Dict, Text, Union
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-import json, copy
+import json, copy, os
 import numpy as np
 
 from spey.base import ModelConfig
@@ -186,6 +186,8 @@ class FullStatisticalModelData(Base):
 
     def __post_init__(self):
         if isinstance(self.background_only_model, str):
+            if not os.path.isfile(self.background_only_model):
+                raise FileNotFoundError(f"Can not find {self.background_only_model}")
             with open(self.background_only_model, "r", encoding="uft-8") as f:
                 self.background_only_model = json.load(f)
 
@@ -236,6 +238,22 @@ class FullStatisticalModelData(Base):
         self._minimum_poi = (
             -np.min(min_ratio).astype(np.float32) if len(min_ratio) > 0 else -np.inf
         )
+
+        self.metadata = {}
+        for idx, obs in enumerate(self.background_only_model["observations"]):
+            tmp = "__unknown__"
+            # Note that this naming scheme is adhoc, json file is not necessarily named properly
+            if "SR" in obs["name"].upper():
+                tmp = "SR"
+            elif "CR" in obs["name"].upper():
+                tmp = "CR"
+            elif "VR" in obs["name"].upper():
+                tmp = "VR"
+            self.metadata[idx] = {
+                "name": obs["name"],
+                "type": tmp,
+                "nbins": len(obs["data"]),
+            }
 
     def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
         """
