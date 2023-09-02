@@ -9,7 +9,7 @@ with open("src/spey_pyhf/_version.py", mode="r", encoding="UTF-8") as f:
 requirements = ["pyhf==0.7.3", "spey>=0.1.1"]
 
 docs = [
-    "sphinx>=6.1.3",
+    "sphinx==6.2.1",
     "sphinxcontrib-bibtex~=2.1",
     "sphinx-click",
     "sphinx_rtd_theme",
