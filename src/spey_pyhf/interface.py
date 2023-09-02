@@ -71,7 +71,7 @@ class PyhfInterface(BackendBase):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = ">=0.1.0"
     """Spey version required for the backend"""
     doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""
@@ -313,7 +313,7 @@ class UncorrelatedBackground(PyhfInterface):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = PyhfInterface.spey_requires
     """Spey version required for the backend"""
     doi: List[Text] = PyhfInterface.doi
     """Citable DOI for the backend"""
@@ -400,7 +400,7 @@ class FullStatisticalModel(PyhfInterface):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = PyhfInterface.spey_requires
     """Spey version required for the backend"""
     doi: List[Text] = PyhfInterface.doi
     """Citable DOI for the backend"""
