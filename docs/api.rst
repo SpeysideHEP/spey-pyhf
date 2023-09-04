@@ -32,5 +32,3 @@ Interface
 .. autoclass:: spey_pyhf.simplify.Simplify
     :members:
     :undoc-members:
-    :show-inheritance:
-    :inherited-members:
