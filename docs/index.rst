@@ -11,6 +11,7 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    :caption: Contents:
 
    quick_start
+   simplify
    api
    citations
 

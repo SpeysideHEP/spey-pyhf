@@ -35,6 +35,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",
     "sphinx_click.ext",
+    # "sphinx_toolbox.collapse", # requires sphinx_toolbox to be installed
     "nbsphinx",
     "sphinx_issues",
     "sphinx_copybutton",

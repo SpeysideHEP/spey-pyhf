@@ -25,6 +25,8 @@ Once this package is installed, ``spey`` can automatically detect it which can b
     >>> #  'pyhf',
     >>> #  'pyhf.uncorrelated_background']
 
+.. _sec_quick_start:
+
 Quick Start
 ===========
 
