@@ -21,19 +21,16 @@ compute the covariance matrix between the nuisance parameters using the Hessian 
 the negative log probability distribution,
 
 .. math::
-
-    \mathbf{V}^{-1}_{ij} = - \frac{\partial^2 \log\mathcal{L}^{\rm control}(0,\theta_0^{\rm control})}
-    {\partial\theta_i\partial\theta_j}
-
-.. .. note::
-
-..     Here we disregard possible signal leakage into the control or validation regions 
-..     by setting all signal yields to zero. This is also ensured due to :math:`\mu=0`.
+    :label: eq:hess
+    
+    \mathbf{V}^{-1}_{ij} = - \frac{\partial^2}{\partial\theta_i\partial\theta_j}
+    \log\mathcal{L}^{\rm control}(0,\theta_0^{\rm control})
 
 
-Covariance matrix :math:`\mathbf{V}_{ij}` allows construction of a multivariate
-Gaussian distribution :math:`\mathcal{N}(\theta_0^{\rm control}, \mathbf{V}_{ij})` 
-where one can sample nuisance parameters, 
+where :math:`\theta_0^{\rm control}` represents the nuisance parameters that maximises 
+:math:`\mathcal{L}^{\rm control}` at :math:`\mu=0`. Covariance matrix :math:`\mathbf{V}_{ij}` 
+allows construction of a multivariate Gaussian distribution 
+:math:`\mathcal{N}(\theta_0^{\rm control}, \mathbf{V}_{ij})` where one can sample nuisance parameters, 
 :math:`\tilde{\theta}_0^{\rm control}\sim\mathcal{N}(\theta_0^{\rm control}, \mathbf{V}_{ij})`, 
 without loosing the correlation between them.
 
@@ -49,10 +46,6 @@ from an independent :math:`\tilde{\theta}_0^{\rm control}`;
 The covariance matrix, :math:`\Sigma`, is constructed from the collection of 
 :math:`\tilde{n}_b`. To extend the methodology to ``"default_pdf.third_moment_expansion"`` 
 one can also compute the third moments directly from the collection of :math:`\tilde{n}_b`.
-
-.. .. note::
-
-..     Auxiliary data is not included in :math:`\tilde{n}_b`.
 
 .. note::
 
@@ -79,10 +72,13 @@ can be constructed as
     >>> full_statistical_model = pdf_wrapper(
     ...     background_only_model=background_only, signal_patch=signal
     ... )
+    >>> full_statistical_model.backend.manager.backend = "jax"
 
 where ``background_only`` refers to background only JSON file retreived from HEPData and 
-``signal`` refers to a signal patch constructed by the user. ``full_statistical_model``
-can be converted into simplified likelihood by using ``pyhf.simplify`` backend.
+``signal`` refers to a signal patch constructed by the user. Note that computation of the 
+Hessian in eq. :eq:`eq:hess` currently requires ``pyhf``'s ``jax`` backend which is ensured
+by the last line in the snippet above. ``full_statistical_model`` can be converted into 
+simplified likelihood by using ``pyhf.simplify`` backend.
 
 .. code:: python3
 
@@ -97,6 +93,12 @@ can be converted into simplified likelihood by using ``pyhf.simplify`` backend.
     * ``statistical_model``: Statistical model constructed using ``pyhf`` backend.
     * ``expected``: Flag to choose if the fit to be realised with respect to the data or 
       background yields, default ``spey.ExpectationType.observed``.
+      
+      * ``expected=spey.ExpectationType.observed`` ensures that :math:`\tilde\theta^{\rm control}` is
+        constructed through postfit.
+      * ``expected=spey.ExpectationType.apriori`` ensures that :math:`\tilde\theta^{\rm control}` is
+        constructed through prefit.
+
     * ``convert_to``: Which simplified framework to be used as a baseline for the conversion,
       default ``"default_pdf.correlated_background"``.
     * ``number_of_samples``: Sets the number of samples to be generated to construct covariance
@@ -107,6 +109,13 @@ can be converted into simplified likelihood by using ``pyhf.simplify`` backend.
       overwrite the system selection by providing the indices of the control and validation regions
       within the channel list from the background only statistical model dictionary. This can be 
       found by iterating over ``background_only["channels"]``.
+
+.. note::
+
+    Possible leakage of signal into control or validation regions are disregarded by setting the signal
+    yields to zero while constructing :math:`\mathcal{L}^{\rm control}`. :math:`\tilde{n}_b` does not
+    include the auxiliary data, hence the final statistical model will only include one uncertainty value
+    per histogram bin.
 
 Acknowledgements
 ----------------
