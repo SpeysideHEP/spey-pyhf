@@ -14,6 +14,7 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    simplify
    api
    citations
+   releases/changelog-dev
 
 
 

@@ -1,4 +1,4 @@
-# Release 0.1-dev (development release)
+# Release notes v0.1.1
 
 ## New features since last release
 
@@ -11,6 +11,9 @@
 
 * Sampler functionality has been extended to isolate auxiliary data.
   ([#3](https://github.com/SpeysideHEP/spey-pyhf/pull/3))
+
+* Fixed parameters have been added to the constraints list.
+  ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
 ## Bug fixes
 

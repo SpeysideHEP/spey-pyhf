@@ -15,8 +15,8 @@ The Simplified likelihood framework contracts all the nuisance parameters
 into a single bin and represents the background uncertainty as a single source. 
 To capture the correlations between nuisance parameters, one needs to construct 
 a statistical model only from control and validation regions, which is ideally 
-purely dominated by the background, henceforth called the control model. Once 
-nuisance parameters are fitted for the control model without the signal, one can 
+purely dominated by the background, henceforth called the control model :math:`\mathcal{L}^{c}`. 
+Once nuisance parameters are fitted for the control model without the signal, one can 
 compute the covariance matrix between the nuisance parameters using the Hessian of 
 the negative log probability distribution,
 
@@ -24,28 +24,36 @@ the negative log probability distribution,
     :label: eq:hess
     
     \mathbf{V}^{-1}_{ij} = - \frac{\partial^2}{\partial\theta_i\partial\theta_j}
-    \log\mathcal{L}^{\rm control}(0,\theta_0^{\rm control})
+    \log\mathcal{L}^{\rm control}(0,\theta_0^{\rm c})
 
 
-where :math:`\theta_0^{\rm control}` represents the nuisance parameters that maximises 
-:math:`\mathcal{L}^{\rm control}` at :math:`\mu=0`. Covariance matrix :math:`\mathbf{V}_{ij}` 
+where :math:`\theta_0^{\rm c}` represents the nuisance parameters that maximises 
+:math:`\mathcal{L}^{\rm c}` at :math:`\mu=0`. Covariance matrix :math:`\mathbf{V}_{ij}` 
 allows construction of a multivariate Gaussian distribution 
-:math:`\mathcal{N}(\theta_0^{\rm control}, \mathbf{V}_{ij})` where one can sample nuisance parameters, 
-:math:`\tilde{\theta}_0^{\rm control}\sim\mathcal{N}(\theta_0^{\rm control}, \mathbf{V}_{ij})`, 
-without loosing the correlation between them.
+:math:`\mathcal{N}(\theta_0^{\rm c}, \mathbf{V}_{ij})` where one can sample nuisance parameters, 
+:math:`\tilde{\theta}\sim\mathcal{N}(\theta_0^{\rm c}, \mathbf{V}_{ij})`, 
+without loosing the correlations between them.
 
-To construct the covariance matrix between background yields within the signal 
-regions, we will use :math:`\tilde{\theta}_0^{\rm control}` along with 
-:math:`\mu=0` to create a sampler where each :math:`\tilde{n}_b` will be sampled 
-from an independent :math:`\tilde{\theta}_0^{\rm control}`;
+It is essential to note that, the nuisance parameters of :math:`\mathcal{L}^{\rm c}` does not
+necessarily match with the requested statistical model, which might be reduced compared to the full model. 
+For sake of simplicity lets call the requested statistical model :math:`\mathcal{L}^{\rm SR}`, but bare 
+in mind that this model does not necessarily only contains signal regions.
+In the case where :math:`|\theta^{\rm SR}|>|\tilde{\theta}^{\rm c}|` the remaining 
+nuisance parameters are fitted to maximize :math:`\mathcal{L}^{\rm SR}` for a given set of 
+:math:`\tilde{\theta}^{\rm c}` and :math:`\mu=0`. Let us call the remaining nuisance parameters that
+maximises this likelihood as :math:`\hat\theta^{\rm SR}`.
+
+Simplified likelihood framework requires a covariance matrix, :math:`\Sigma`, representing
+the correlations between each bin for the background-only model.
+To construct the covariance matrix, one can sample from :math:`\mathcal{L}^{\rm SR}` using 
+:math:`\hat\theta^{\rm SR}` and :math:`\tilde{\theta}^{\rm c}`;
 
 .. math::
 
-    \tilde{n}_b \sim \mathcal{L}^{\rm original}(0, \tilde{\theta}_0^{\rm control})
+    \tilde{n}_b \sim \mathcal{L}^{\rm SR}(\mu=0, \tilde{\theta}^{\rm c}, \hat\theta^{\rm SR})
 
-The covariance matrix, :math:`\Sigma`, is constructed from the collection of 
-:math:`\tilde{n}_b`. To extend the methodology to ``"default_pdf.third_moment_expansion"`` 
-one can also compute the third moments directly from the collection of :math:`\tilde{n}_b`.
+where :math:`\Sigma = {\rm cov}(\tilde{n}_b)`. Similarly one can compute third moments of 
+:math:`\tilde{n}_b` to extend the model for ``"default_pdf.third_moment_expansion"``.
 
 .. note::
 
@@ -94,9 +102,9 @@ simplified likelihood by using ``pyhf.simplify`` backend.
     * ``expected``: Flag to choose if the fit to be realised with respect to the data or 
       background yields, default ``spey.ExpectationType.observed``.
       
-      * ``expected=spey.ExpectationType.observed`` ensures that :math:`\tilde\theta^{\rm control}` is
+      * ``expected=spey.ExpectationType.observed`` ensures that :math:`\tilde\theta^{\rm c}` is
         constructed through postfit.
-      * ``expected=spey.ExpectationType.apriori`` ensures that :math:`\tilde\theta^{\rm control}` is
+      * ``expected=spey.ExpectationType.apriori`` ensures that :math:`\tilde\theta^{\rm c}` is
         constructed through prefit.
 
     * ``convert_to``: Which simplified framework to be used as a baseline for the conversion,
@@ -107,8 +115,9 @@ simplified likelihood by using ``pyhf.simplify`` backend.
       control and validation regions, however there is no fixed convention in naming which lead to 
       choosing wrong channels for the construction of the :math:`\mathcal{L}^{\rm control}`. One can
       overwrite the system selection by providing the indices of the control and validation regions
-      within the channel list from the background only statistical model dictionary. This can be 
-      found by iterating over ``background_only["channels"]``.
+      within the channel list from the background only statistical model dictionary. The channel names
+      of the ``statistical_model`` can be extracted via ``list(statistical_model.backend.model.channels)``
+      property. For details see :attr:`~spey_pyhf.data.FullStatisticalModelData.channels`.
 
 .. note::
 
