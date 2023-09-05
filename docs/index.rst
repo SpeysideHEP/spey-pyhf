@@ -16,11 +16,4 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    citations
    releases/changelog-dev
 
-
-
-Indices and tables
-==================
-
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

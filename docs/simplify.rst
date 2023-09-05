@@ -14,7 +14,7 @@ Methodology
 The Simplified likelihood framework contracts all the nuisance parameters 
 into a single bin and represents the background uncertainty as a single source. 
 To capture the correlations between nuisance parameters, one needs to construct 
-a statistical model only from control and validation regions, which is ideally 
+a statistical model only from **control and validation** regions, which is ideally 
 purely dominated by the background, henceforth called the control model :math:`\mathcal{L}^{c}`. 
 Once nuisance parameters are fitted for the control model without the signal, one can 
 compute the covariance matrix between the nuisance parameters using the Hessian of 
@@ -24,7 +24,7 @@ the negative log probability distribution,
     :label: eq:hess
     
     \mathbf{V}^{-1}_{ij} = - \frac{\partial^2}{\partial\theta_i\partial\theta_j}
-    \log\mathcal{L}^{\rm control}(0,\theta_0^{\rm c})
+    \log\mathcal{L}^{\rm c}(0,\theta_0^{\rm c})
 
 
 where :math:`\theta_0^{\rm c}` represents the nuisance parameters that maximises 
@@ -113,7 +113,7 @@ simplified likelihood by using ``pyhf.simplify`` backend.
       matrix, :math:`\Sigma`, for the background bins, default ``1000``.
     * ``control_region_indices``: Usually algorithm can pick up the differences between signal, 
       control and validation regions, however there is no fixed convention in naming which lead to 
-      choosing wrong channels for the construction of the :math:`\mathcal{L}^{\rm control}`. One can
+      choosing wrong channels for the construction of the :math:`\mathcal{L}^{\rm c}`. One can
       overwrite the system selection by providing the indices of the control and validation regions
       within the channel list from the background only statistical model dictionary. The channel names
       of the ``statistical_model`` can be extracted via ``list(statistical_model.backend.model.channels)``
@@ -122,7 +122,7 @@ simplified likelihood by using ``pyhf.simplify`` backend.
 .. note::
 
     Possible leakage of signal into control or validation regions are disregarded by setting the signal
-    yields to zero while constructing :math:`\mathcal{L}^{\rm control}`. :math:`\tilde{n}_b` does not
+    yields to zero while constructing :math:`\mathcal{L}^{\rm c}`. :math:`\tilde{n}_b` does not
     include the auxiliary data, hence the final statistical model will only include one uncertainty value
     per histogram bin.
 
