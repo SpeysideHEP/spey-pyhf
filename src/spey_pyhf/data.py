@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Dict, Text, Union
+from typing import Optional, List, Tuple, Dict, Text, Union, Iterator
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -240,20 +240,39 @@ class FullStatisticalModelData(Base):
         )
 
         self.metadata = {}
-        for idx, obs in enumerate(self.background_only_model["observations"]):
+        for name in self.workspace.channels:
             tmp = "__unknown__"
             # Note that this naming scheme is adhoc, json file is not necessarily named properly
-            if "SR" in obs["name"].upper():
+            if "SR" in name.upper():
                 tmp = "SR"
-            elif "CR" in obs["name"].upper():
+            elif "CR" in name.upper():
                 tmp = "CR"
-            elif "VR" in obs["name"].upper():
+            elif "VR" in name.upper():
                 tmp = "VR"
-            self.metadata[idx] = {
-                "name": obs["name"],
-                "type": tmp,
-                "nbins": len(obs["data"]),
-            }
+            self.metadata[name] = tmp
+
+        # Initialise config
+        model = self()[1]
+
+        self._config = {
+            "poi_index": model.config.poi_index,
+            "minimum_poi": self._minimum_poi,
+            "suggested_init": model.config.suggested_init(),
+            "suggested_bounds": model.config.suggested_bounds(),
+            "parameter_names": model.config.par_names,
+            "suggested_fixed": model.config.suggested_fixed(),
+        }
+
+    @property
+    def channels(self) -> Iterator[Text]:
+        """Return channel names"""
+        return (ch["name"] for ch in self.background_only_model["channels"])
+
+    @property
+    def channel_properties(self) -> Iterator[Tuple[int, Text, int]]:
+        """Returns an iterator for channel index, name and number of bins"""
+        for idx, channel in enumerate(self.channels):
+            yield idx, channel, self.workspace.channel_nbins[channel]
 
     def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
         """
@@ -313,20 +332,21 @@ class FullStatisticalModelData(Base):
             Model configuration. Information regarding the position of POI in
             parameter list, suggested input and bounds.
         """
-        _, model, _ = self()
-
-        bounds = model.config.suggested_bounds()
-        bounds[model.config.poi_index] = (
+        bounds = copy.deepcopy(self._config["suggested_bounds"])
+        bounds[self._config["poi_index"]] = (
             max(self._minimum_poi, -10.0) if allow_negative_signal else 0.0,
-            bounds[model.config.poi_index][1] if not poi_upper_bound else poi_upper_bound,
+            bounds[self._config["poi_index"]][1]
+            if not poi_upper_bound
+            else poi_upper_bound,
         )
 
         return ModelConfig(
-            poi_index=model.config.poi_index,
+            poi_index=self._config["poi_index"],
             minimum_poi=self._minimum_poi,
-            suggested_init=model.config.suggested_init(),
+            suggested_init=self._config["suggested_init"],
             suggested_bounds=bounds,
-            parameter_names=model.config.par_names,
+            parameter_names=self._config["parameter_names"],
+            suggested_fixed=self._config["suggested_fixed"],
         )
 
     @property
