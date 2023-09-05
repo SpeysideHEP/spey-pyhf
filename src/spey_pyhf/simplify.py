@@ -9,7 +9,6 @@ import numpy as np
 from scipy.stats import multivariate_normal, moment
 
 from ._version import __version__
-from .interface import PyhfInterface
 
 
 def __dir__():
