@@ -17,6 +17,10 @@
 
 ## Bug fixes
 
+* Bugfix in apriori likelihood computation for full likelihoods mentioned in
+  [#5](https://github.com/SpeysideHEP/spey-pyhf/issues/5).
+  ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
+
 ## Contributors
 
 This release contains contributions from (in alphabetical order):
