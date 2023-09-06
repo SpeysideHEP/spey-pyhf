@@ -34,6 +34,11 @@ allows construction of a multivariate Gaussian distribution
 :math:`\tilde{\theta}\sim\mathcal{N}(\theta_0^{\rm c}, \mathbf{V}_{ij})`, 
 without loosing the correlations between them.
 
+.. attention::
+
+	This method is highly dependent on which channels or regions are considered as control regions since 
+	this will determine how much of the likelihood is being summarised as a multivariate (skewed) Gaussian.
+
 It is essential to note that, the nuisance parameters of :math:`\mathcal{L}^{\rm c}` does not
 necessarily match with the requested statistical model, which might be reduced compared to the full model. 
 For sake of simplicity lets call the requested statistical model :math:`\mathcal{L}^{\rm SR}`, but bare 
