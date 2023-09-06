@@ -1,5 +1,5 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
-from typing import Text, List, Optional, Dict, Union, Callable
+from typing import Text, List, Optional, Union, Callable
 
 import spey, tqdm, copy
 from spey.optimizer.core import fit
@@ -9,6 +9,7 @@ import numpy as np
 from scipy.stats import multivariate_normal, moment
 
 from ._version import __version__
+from . import WorkspaceInterpreter
 
 
 def __dir__():
@@ -17,47 +18,6 @@ def __dir__():
 
 class ConversionError(Exception):
     """Conversion error class"""
-
-
-def remove_from_json(idx: int) -> Dict:
-    """
-    Remove channel from the json file
-
-    Args:
-        idx (``int``): index of the channel
-
-    Returns:
-        ``Dict``:
-        JSON patch
-    """
-    return {"op": "remove", "path": f"/channels/{idx}"}
-
-
-def add_to_json(idx: int, nbins: int, poi_name: Text) -> Dict:
-    """
-    Keep channel in the json file
-
-    Args:
-        idx (``int``): index of the channel
-        nbins (``int``): number of bins
-        poi_name (``Text``): name of POI
-
-    Returns:
-        ``Dict``:
-        json patch
-    """
-    return {
-        "op": "add",
-        "path": f"/channels/{idx}/samples/0",
-        "value": {
-            "name": "smp",
-            "data": [0.0] * nbins,
-            "modifiers": [
-                {"data": None, "name": "lumi", "type": "lumi"},
-                {"data": None, "name": poi_name, "type": "normfactor"},
-            ],
-        },
-    }
 
 
 def make_constraint(index: int, value: float) -> Callable[[np.ndarray], float]:
@@ -91,7 +51,7 @@ class Simplify(spey.ConverterBase):
     Args:
         statistical_model (:obj:`~spey.StatisticalModel`): constructed full statistical model
         expected (:obj:`~spey.ExpectationType`): Sets which values the fitting algorithm should focus and
-              p-values to be computed.
+              p-values to be computed. See `spey online documentation for details <https://speysidehep.github.io/spey/>`_
 
               * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
                 prescriotion which means that the experimental data will be assumed to be the truth
@@ -102,10 +62,10 @@ class Simplify(spey.ConverterBase):
             be either ``"default_pdf.correlated_background"`` or ``"default_pdf.third_moment_expansion"``.
         number_of_samples (``int``, default ``1000``): number of samples to be generated in order to estimate
             contract the uncertainties into a single value.
-        control_region_indices (``List[int]``, default ``None``): indices of the control and validation
-            regions inside the background only dictionary. For most of the cases interface will be able to pick
-            up the names of these regions but in case the region names are not obvious, reconstruction may fail
-            thus these indices will indicate the location of the VRs and CRs within the channel list.
+        control_region_indices (``List[int]`` or `` List[Text]``, default ``None``): indices or names of the control and
+            validation regions inside the background only dictionary. For most of the cases interface will be able
+            to guess the names of these regions but in case the region names are not obvious, reconstruction may
+            fail thus these indices will indicate the location of the VRs and CRs within the channel list.
         save_model (``Text``, default ``None``): Full path to save the model details. Model will be saved as
             compressed NumPy file (``.npz``), file name should be given as ``/PATH/TO/DIR/MODELNAME.npz``.
 
@@ -128,7 +88,7 @@ class Simplify(spey.ConverterBase):
         expected: spey.ExpectationType = spey.ExpectationType.observed,
         convert_to: Text = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
-        control_region_indices: Optional[List[int]] = None,
+        control_region_indices: Optional[Union[List[int], List[Text]]] = None,
         save_model: Optional[Text] = None,
     ) -> Union[CorrelatedBackground, ThirdMomentExpansion]:
 
@@ -145,49 +105,27 @@ class Simplify(spey.ConverterBase):
         bkgonly_model = statistical_model.backend.model.background_only_model
         signal_patch = statistical_model.backend.model.signal_patch
 
-        # configure signal patch map with respect to channel names
-        signal_patch_map = {}
-        for channel in signal_patch:
-            if channel["op"] == "add":
-                path = int(channel["path"].split("/")[2])
-                channel_name = bkgonly_model["channels"][path]["name"]
-                signal_patch_map[channel_name] = channel["value"]["data"]
+        interpreter = WorkspaceInterpreter(bkgonly_model)
 
-        # Retreive POI name
-        POI_name = bkgonly_model["measurements"][0]["config"]["poi"]
+        # configure signal patch map with respect to channel names
+        signal_patch_map = interpreter.patch_to_map(signal_patch)
 
         # Prepare a JSON patch to separate control and validation regions
         # These regions are generally marked as CR and VR
-        control_regions = []
-        tmp_remove = []
-        for (
-            ich,
-            channel_name,
-            nbins,
-        ) in statistical_model.backend.model.channel_properties:
-            if control_region_indices is not None:
-                if ich in control_region_indices:
-                    control_regions.append(add_to_json(ich, nbins, POI_name))
-                else:
-                    tmp_remove.append(remove_from_json(ich))
-            else:
-                if statistical_model.backend.model.metadata[channel_name] in ["CR", "VR"]:
-                    control_regions.append(add_to_json(ich, nbins, POI_name))
-                else:
-                    tmp_remove.append(remove_from_json(ich))
+        if control_region_indices is None:
+            control_region_indices = interpreter.get_CRVR()
 
-        if len(control_regions) == 0:
+        if len(control_region_indices) == 0:
             raise ConversionError(
                 "Can not construct control model. Please provide ``control_region_indices``."
             )
 
-        # Need to sort correctly the paths to the channels to be removed
-        tmp_remove.sort(key=lambda p: p["path"].split("/")[-1], reverse=True)
-        control_regions += tmp_remove
+        for channel in interpreter.get_channels(control_region_indices):
+            interpreter.inject_signal(channel, [0.0] * interpreter.bin_map[channel])
 
         pdf_wrapper = spey.get_backend("pyhf")
         control_model = pdf_wrapper(
-            background_only_model=bkgonly_model, signal_patch=control_regions
+            background_only_model=bkgonly_model, signal_patch=interpreter.make_patch()
         )
 
         # Extract the nuisance parameters that maximises the likelihood at mu=0
@@ -279,11 +217,16 @@ class Simplify(spey.ConverterBase):
                             bounds=None,
                         )
 
-                current_sample = statistical_model.backend.get_sampler(
-                    np.array(current_nui_params if new_params is None else new_params)
-                )(1, include_auxiliary=False)
-                samples.append(current_sample)
-                pbar.update()
+                try:
+                    current_sample = statistical_model.backend.get_sampler(
+                        np.array(current_nui_params if new_params is None else new_params)
+                    )(1, include_auxiliary=False)
+                    samples.append(current_sample)
+                    pbar.update()
+                except ValueError:
+                    # print("current_nui_params", current_nui_params)
+                    # print("new_params", new_params)
+                    pass
         samples = np.vstack(samples)
 
         covariance_matrix = np.cov(samples, rowvar=0)
@@ -336,6 +279,7 @@ class Simplify(spey.ConverterBase):
                 background_yields=background_yields,
                 third_moments=third_moments,
                 data=data,
+                channel_order=stat_model_pyhf.config.channels,
             )
 
         return backend
