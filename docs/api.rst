@@ -51,3 +51,10 @@ Data classes
     :undoc-members:
     :show-inheritance:
     :inherited-members:
+
+Helper functions
+----------------
+
+.. autoclass:: spey_pyhf.WorkspaceInterpreter
+    :members:
+    :undoc-members:
