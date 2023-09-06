@@ -8,7 +8,7 @@ import numpy as np
 from spey.base import ModelConfig
 from spey import ExpectationType
 
-from . import manager
+from . import manager, WorkspaceInterpreter
 
 
 class Base(ABC):
@@ -192,17 +192,14 @@ class FullStatisticalModelData(Base):
                 self.background_only_model = json.load(f)
 
         self.background_only_model_apriori = copy.deepcopy(self.background_only_model)
+        interpreter = WorkspaceInterpreter(self.background_only_model)
+        interpreter.add_patch(self.signal_patch)
 
         # set data as expected background events
-        obs = []
-        for channel in self.background_only_model_apriori.get("channels", []):
-            current = []
-            for ch in channel["samples"]:
-                if len(current) == 0:
-                    current = [0.0] * len(ch["data"])
-                current = [cur + dt for cur, dt in zip(current, ch["data"])]
-            obs.append({"name": channel["name"], "data": current})
-        self.background_only_model_apriori["observations"] = obs
+        self.background_only_model_apriori["observations"] = [
+            {"name": name, "data": data}
+            for name, data in interpreter.expected_background_yields.items()
+        ]
 
         self.workspace_apriori = manager.pyhf.Workspace(
             self.background_only_model_apriori
@@ -239,18 +236,7 @@ class FullStatisticalModelData(Base):
             -np.min(min_ratio).astype(np.float32) if len(min_ratio) > 0 else -np.inf
         )
 
-        self.metadata = {}
-        for name in self.workspace.channels:
-            tmp = "__unknown__"
-            # Note that this naming scheme is adhoc, json file is not necessarily named properly
-            if "SR" in name.upper():
-                tmp = "SR"
-            elif "CR" in name.upper():
-                tmp = "CR"
-            elif "VR" in name.upper():
-                tmp = "VR"
-            self.metadata[name] = tmp
-
+        self._models = {"post": None, "pre": None}
         # Initialise config
         model = self()[1]
 
@@ -296,24 +282,34 @@ class FullStatisticalModelData(Base):
             workspace, model and data
         """
         if expected == ExpectationType.apriori:
-            model = self.workspace_apriori.model(
+            if self._models["pre"] is None:
+                self._models["pre"] = self.workspace_apriori.model(
+                    patches=[self.signal_patch],
+                    modifier_settings={
+                        "normsys": {"interpcode": "code4"},
+                        "histosys": {"interpcode": "code4p"},
+                    },
+                )
+
+            return (
+                self.workspace_apriori,
+                self._models["pre"],
+                self.workspace_apriori.data(self._models["pre"]),
+            )
+
+        if self._models["post"] is None:
+            self._models["post"] = self.workspace.model(
                 patches=[self.signal_patch],
                 modifier_settings={
                     "normsys": {"interpcode": "code4"},
                     "histosys": {"interpcode": "code4p"},
                 },
             )
-
-            return self.workspace_apriori, model, self.workspace_apriori.data(model)
-
-        model = self.workspace.model(
-            patches=[self.signal_patch],
-            modifier_settings={
-                "normsys": {"interpcode": "code4"},
-                "histosys": {"interpcode": "code4p"},
-            },
+        return (
+            self.workspace,
+            self._models["post"],
+            self.workspace.data(self._models["post"]),
         )
-        return self.workspace, model, self.workspace.data(model)
 
     def config(
         self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
