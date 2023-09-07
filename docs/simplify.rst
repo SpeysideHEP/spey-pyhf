@@ -76,6 +76,18 @@ A full statistical model can be constructed using a background only JSON seriali
 likelihood through ``spey-pyhf`` interface can be found in 
 :ref:`this section <sec_quick_start>`.
 
+As an example, lets use the JSON files provided for ATLAS-SUSY-2019-08 analysis in
+`HEPData <https://www.hepdata.net/record/resource/1934827?landing_page=true>`_. 
+One can read the file using json package
+
+.. code:: python3
+
+    >>> import json
+    >>> with open("1Lbb-likelihoods-hepdata/BkgOnly.json", "r") as f:
+    >>>	    background_only = json.load(f)
+    >>> with open("1Lbb-likelihoods-hepdata/patchset.json", "r") as f:
+    >>>     signal = json.load(f)["patches"][0]["patch"]
+
 Following the details in previous sections, a statistical model using ``pyhf`` interface
 can be constructed as
 
@@ -99,6 +111,9 @@ simplified likelihood by using ``pyhf.simplify`` backend.
     >>> simplified_model = converter(
     ...     statistical_model=full_statistical_model, 
     ...     convert_to="default_pdf.correlated_background",
+    ...     control_region_indices=[
+    ...	        'WREM_cuts', 'STCREM_cuts', 'TRHMEM_cuts', 'TRMMEM_cuts', 'TRLMEM_cuts'
+    ...	    ]
     ... )
 
 **Arguments:** (for details see the object reference for :obj:`~spey_pyhf.simplify.Simplify`)
