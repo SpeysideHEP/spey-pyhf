@@ -1,7 +1,7 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
 from typing import Text, List, Optional, Union, Callable
 
-import spey, tqdm, copy
+import spey, tqdm, copy, warnings
 from spey.optimizer.core import fit
 from spey.backends.default_pdf import CorrelatedBackground, ThirdMomentExpansion
 
@@ -56,7 +56,7 @@ class Simplify(spey.ConverterBase):
             be either ``"default_pdf.correlated_background"`` or ``"default_pdf.third_moment_expansion"``.
         number_of_samples (``int``, default ``1000``): number of samples to be generated in order to estimate
             contract the uncertainties into a single value.
-        control_region_indices (``List[int]`` or `` List[Text]``, default ``None``): indices or names of the control and
+        control_region_indices (``List[int]`` or ``List[Text]``, default ``None``): indices or names of the control and
             validation regions inside the background only dictionary. For most of the cases interface will be able
             to guess the names of these regions but in case the region names are not obvious, reconstruction may
             fail thus these indices will indicate the location of the VRs and CRs within the channel list.
@@ -189,6 +189,7 @@ class Simplify(spey.ConverterBase):
         suggested_fixed = fit_opts["model_configuration"].suggested_fixed
 
         samples = []
+        warnings_list = []
         with tqdm.tqdm(
             total=number_of_samples,
             unit="sample",
@@ -227,16 +228,17 @@ class Simplify(spey.ConverterBase):
                             current_fit_opts["model_configuration"].suggested_init,
                             new_params,
                         )
-                        logpdf = current_fit_opts["logpdf"](np.array(init_params))
-                        if np.isnan(logpdf):
+                        if np.isnan(current_fit_opts["logpdf"](np.array(init_params))):
                             # if the initial value is NaN continue search
                             continue
                         current_fit_opts["constraints"] += constraints
-                        _, new_params = fit(
-                            **current_fit_opts,
-                            initial_parameters=init_params.tolist(),
-                            bounds=None,
-                        )
+                        with warnings.catch_warnings(record=True) as w:
+                            _, new_params = fit(
+                                **current_fit_opts,
+                                initial_parameters=init_params.tolist(),
+                                bounds=None,
+                            )
+                            warnings_list += w
 
                 try:
                     current_sample = statistical_model.backend.get_sampler(
@@ -249,6 +251,14 @@ class Simplify(spey.ConverterBase):
                     # e.g. poisson requires positive lambda values to sample from. If sample leads to a negative
                     # lambda value continue sampling to avoid that point.
                     continue
+
+        if len(warnings_list) > 0:
+            warnings.warn(
+                message=f"{len(warnings_list)} warning(s) generated during sampling."
+                " This might be due to edge cases in nuisance parameter sampling.",
+                category=RuntimeWarning,
+            )
+
         samples = np.vstack(samples)
 
         covariance_matrix = np.cov(samples, rowvar=0)
@@ -291,17 +301,14 @@ class Simplify(spey.ConverterBase):
             )
 
         if save_model is not None:
-            if not save_model.endswith(".npz"):
-                raise ValueError(
-                    f"Model file extension has to be ``.npz``. '{save_model}' is given."
+            if save_model.endswith(".npz"):
+                np.savez_compressed(
+                    save_model,
+                    covariance_matrix=covariance_matrix,
+                    background_yields=background_yields,
+                    third_moments=third_moments,
+                    data=data,
+                    channel_order=stat_model_pyhf.config.channels,
                 )
-            np.savez_compressed(
-                save_model,
-                covariance_matrix=covariance_matrix,
-                background_yields=background_yields,
-                third_moments=third_moments,
-                data=data,
-                channel_order=stat_model_pyhf.config.channels,
-            )
 
         return backend
