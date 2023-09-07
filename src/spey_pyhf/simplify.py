@@ -50,14 +50,8 @@ class Simplify(spey.ConverterBase):
 
     Args:
         statistical_model (:obj:`~spey.StatisticalModel`): constructed full statistical model
-        expected (:obj:`~spey.ExpectationType`): Sets which values the fitting algorithm should focus and
-              p-values to be computed. See `spey online documentation for details <https://speysidehep.github.io/spey/>`_
-
-              * :obj:`~spey.ExpectationType.observed`: Computes the p-values with via post-fit
-                prescriotion which means that the experimental data will be assumed to be the truth
-                (default).
-              * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
-                prescription which means that the SM will be assumed to be the truth.
+        fittype (``Text``, default ``"postfit"``): what type of fitting should be performed ``"postfit"``
+            or ``"prefit"``.
         convert_to (``Text``, default ``"default_pdf.correlated_background"``): conversion type. Should
             be either ``"default_pdf.correlated_background"`` or ``"default_pdf.third_moment_expansion"``.
         number_of_samples (``int``, default ``1000``): number of samples to be generated in order to estimate
@@ -69,8 +63,30 @@ class Simplify(spey.ConverterBase):
         save_model (``Text``, default ``None``): Full path to save the model details. Model will be saved as
             compressed NumPy file (``.npz``), file name should be given as ``/PATH/TO/DIR/MODELNAME.npz``.
 
+            **Reading the saved model:**
+
+            One can read the saved model using NumPy's :func:`load` function
+
+            .. code:: python3
+
+                >>> import numpy as np
+                >>> saved_model = np.load("/PATH/TO/DIR/MODELNAME.npz")
+                >>> data = saved_model["data"]
+
+            This model has several containers which includes the following keywords:
+
+            * ``"covariance_matrix"``: includes covariance matrix per bin
+            * ``"background_yields"``: includes background yields per bin
+            * ``"third_moments"``: (if ``convert_to="default_pdf.third_moment_expansion"``) includes third moments
+              per bin
+            * ``"data"``: includes observed values per bin
+            * ``"channel_order"``: includes information regarding the channel order to convert a signal patch to be used
+              in the simplified framework.
+
     Raises:
         ``ConversionError``: If the requirements are not satisfied.
+        ``AssertionError``: If input statistical model does not have ``pyhf`` backend or ``pyhf``
+            manager does not use ``jax`` backend.
     """
 
     name: Text = "pyhf.simplify"
@@ -85,7 +101,7 @@ class Simplify(spey.ConverterBase):
     def __call__(
         self,
         statistical_model: spey.StatisticalModel,
-        expected: spey.ExpectationType = spey.ExpectationType.observed,
+        fittype: Text = "postfit",
         convert_to: Text = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
         control_region_indices: Optional[Union[List[int], List[Text]]] = None,
@@ -104,6 +120,11 @@ class Simplify(spey.ConverterBase):
 
         bkgonly_model = statistical_model.backend.model.background_only_model
         signal_patch = statistical_model.backend.model.signal_patch
+
+        expected = {
+            "postfit": spey.ExpectationType.observed,
+            "prefit": spey.ExpectationType.apriori,
+        }[fittype]
 
         interpreter = WorkspaceInterpreter(bkgonly_model)
 
@@ -224,9 +245,10 @@ class Simplify(spey.ConverterBase):
                     samples.append(current_sample)
                     pbar.update()
                 except ValueError:
-                    # print("current_nui_params", current_nui_params)
-                    # print("new_params", new_params)
-                    pass
+                    # Some of the samples can lead to problems while sampling from a poisson distribution.
+                    # e.g. poisson requires positive lambda values to sample from. If sample leads to a negative
+                    # lambda value continue sampling to avoid that point.
+                    continue
         samples = np.vstack(samples)
 
         covariance_matrix = np.cov(samples, rowvar=0)
@@ -240,9 +262,9 @@ class Simplify(spey.ConverterBase):
         signal_yields = []
         for channel_name in stat_model_pyhf.config.channels:
             signal_yields += signal_patch_map[channel_name]
-        background_yields = np.sum(
-            np.squeeze(stat_model_pyhf.nominal_rates), axis=0
-        ).tolist()
+        # NOTE background yields are first moments in simplified framework not the yield values
+        # in the full statistical model!
+        background_yields = np.mean(samples, axis=0)
 
         third_moments = []
         if convert_to == "default_pdf.correlated_background":

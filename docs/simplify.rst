@@ -101,17 +101,11 @@ simplified likelihood by using ``pyhf.simplify`` backend.
     ...     convert_to="default_pdf.correlated_background",
     ... )
 
-**Arguments:**
+**Arguments:** (for details see the object reference for :obj:`~spey_pyhf.simplify.Simplify`)
 
     * ``statistical_model``: Statistical model constructed using ``pyhf`` backend.
-    * ``expected``: Flag to choose if the fit to be realised with respect to the data or 
-      background yields, default ``spey.ExpectationType.observed``.
-      
-      * ``expected=spey.ExpectationType.observed`` ensures that :math:`\tilde\theta^{\rm c}` is
-        constructed through postfit.
-      * ``expected=spey.ExpectationType.apriori`` ensures that :math:`\tilde\theta^{\rm c}` is
-        constructed through prefit.
-
+    * ``fittype``: Flag to choose what type of fit to be performed. User can choose between
+      ``"postfit"`` and ``"prefit"``.
     * ``convert_to``: Which simplified framework to be used as a baseline for the conversion,
       default ``"default_pdf.correlated_background"``.
     * ``number_of_samples``: Sets the number of samples to be generated to construct covariance
