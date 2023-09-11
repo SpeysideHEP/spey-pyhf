@@ -220,7 +220,7 @@ def objective_wrapper(
             Gradient is only available for certain pyhf backends.
     """
     minimizer_kwargs, _ = manager.shim(
-        manager.jit(manager.pyhf.infer.mle.twice_nll),
+        manager.pyhf.infer.mle.twice_nll,
         manager.pyhf.tensorlib.astensor(data),
         pdf,
         pdf.config.suggested_init(),
