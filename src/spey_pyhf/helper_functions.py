@@ -1,5 +1,5 @@
 """Helper function for creating and interpreting pyhf inputs"""
-from typing import Dict, List, Text, Iterator, Union
+from typing import Dict, Iterator, List, Text, Union
 
 __all__ = ["WorkspaceInterpreter"]
 

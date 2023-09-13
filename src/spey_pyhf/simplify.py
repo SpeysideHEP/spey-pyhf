@@ -1,15 +1,17 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
-from typing import Text, List, Optional, Union, Callable
-
-import spey, tqdm, copy, warnings
-from spey.optimizer.core import fit
-from spey.backends.default_pdf import CorrelatedBackground, ThirdMomentExpansion
+import copy
+import warnings
+from typing import Callable, List, Optional, Text, Union
 
 import numpy as np
-from scipy.stats import multivariate_normal, moment
+import spey
+import tqdm
+from scipy.stats import moment, multivariate_normal
+from spey.backends.default_pdf import CorrelatedBackground, ThirdMomentExpansion
+from spey.optimizer.core import fit
 
-from ._version import __version__
 from . import WorkspaceInterpreter
+from ._version import __version__
 
 
 def __dir__():

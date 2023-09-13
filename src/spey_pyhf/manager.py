@@ -1,6 +1,7 @@
 """Manager for pyhf integration"""
-from typing import Text, List, Callable
-import logging, importlib
+import importlib
+import logging
+from typing import Callable, List, Text
 
 from spey.system.exceptions import MethodNotAvailable
 

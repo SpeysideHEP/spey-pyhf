@@ -1,16 +1,18 @@
 """pyhf plugin for spey interface"""
 
-from typing import Optional, List, Text, Union, Callable, Tuple, Dict
-import copy, warnings
-import numpy as np
+import copy
+import warnings
+from typing import Callable, Dict, List, Optional, Text, Tuple, Union
 
-from spey.utils import ExpectationType
-from spey.base.backend_base import BackendBase
+import numpy as np
 from spey.base import ModelConfig
-from .utils import objective_wrapper
-from ._version import __version__
+from spey.base.backend_base import BackendBase
+from spey.utils import ExpectationType
+
 from . import manager
-from .data import Base, SimpleModelData, FullStatisticalModelData
+from ._version import __version__
+from .data import Base, FullStatisticalModelData, SimpleModelData
+from .utils import objective_wrapper
 
 __all__ = ["UncorrelatedBackground", "FullStatisticalModel"]
 

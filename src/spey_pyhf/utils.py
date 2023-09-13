@@ -1,10 +1,9 @@
-from typing import Dict, Union, Optional, Tuple, List, Any, Callable
-
 import warnings
-import numpy as np
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from spey.utils import ExpectationType
+import numpy as np
 from spey.system.exceptions import InvalidInput
+from spey.utils import ExpectationType
 
 from . import manager
 
