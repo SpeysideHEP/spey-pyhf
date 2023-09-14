@@ -42,7 +42,7 @@ def make_constraint(index: int, value: float) -> Callable[[np.ndarray], float]:
 
 
 class Simplify(spey.ConverterBase):
-    """
+    r"""
     An interface to convert pyhf full statistical model prescription into simplified likelihood
     framework as either correlated background or third moment expansion model. For details on simplified
     likelihood framework please see
@@ -62,6 +62,10 @@ class Simplify(spey.ConverterBase):
             validation regions inside the background only dictionary. For most of the cases interface will be able
             to guess the names of these regions but in case the region names are not obvious, reconstruction may
             fail thus these indices will indicate the location of the VRs and CRs within the channel list.
+        include_modifiers_in_control_model (``bool``, default ``False``): This flag enables the extraction of the signal
+            modifiers to be used in the control model. The control model yields will still be zero and :math:`\mu=0`
+            but the contribution of the signal modifiers to the nuisance covariance matrix will be taken into account.
+            By default, modifiers are excluded from the control model.
         save_model (``Text``, default ``None``): Full path to save the model details. Model will be saved as
             compressed NumPy file (``.npz``), file name should be given as ``/PATH/TO/DIR/MODELNAME.npz``.
 
@@ -87,8 +91,47 @@ class Simplify(spey.ConverterBase):
 
     Raises:
         ``ConversionError``: If the requirements are not satisfied.
-        ``AssertionError``: If input statistical model does not have ``pyhf`` backend or ``pyhf``
+        :obj:`AssertionError`: If input statistical model does not have ``pyhf`` backend or ``pyhf``
             manager does not use ``jax`` backend.
+
+    **Example:**
+
+    As an example, lets use the JSON files provided for ATLAS-SUSY-2019-08 analysis which can be found in
+    `HEPData <https://www.hepdata.net/record/resource/1934827?landing_page=true>`_. Once these are downloaded
+    one can read them as and construct a model as follows;
+
+    .. code:: python3
+
+        >>> import json, spey
+        >>> with open("1Lbb-likelihoods-hepdata/BkgOnly.json", "r") as f:
+        >>>	    background_only = json.load(f)
+        >>> with open("1Lbb-likelihoods-hepdata/patchset.json", "r") as f:
+        >>>     signal = json.load(f)["patches"][0]["patch"]
+
+        >>> pdf_wrapper = spey.get_backend("pyhf")
+        >>> full_statistical_model = pdf_wrapper(
+        ...     background_only_model=background_only, signal_patch=signal
+        ... )
+        >>> full_statistical_model.backend.manager.backend = "jax"
+
+    Note that ``patchset.json`` includes more than one patch set, thats why we used only one of them.
+    The last line enables the usage of ``jax`` backend in ``pyhf`` interface which in turn enables one
+    to compute Hessian of the statistical model which is needed for simplification procedure.
+
+    Now we ca call ``"pyhf.simplify"`` model to map our full likelihood to simplified likelihood framework
+
+    .. code:: python3
+
+        >>> converter = spey.get_backend("pyhf.simplify")
+        >>> simplified_model = converter(
+        ...     statistical_model=full_statistical_model,
+        ...     convert_to="default_pdf.correlated_background",
+        ...     control_region_indices=[
+        ...	        'WREM_cuts', 'STCREM_cuts', 'TRHMEM_cuts', 'TRMMEM_cuts', 'TRLMEM_cuts'
+        ...	    ]
+        ... )
+        >>> print(simplified_model.backend_type)
+        >>> # "default_pdf.correlated_background"
     """
 
     name: Text = "pyhf.simplify"
@@ -107,6 +150,7 @@ class Simplify(spey.ConverterBase):
         convert_to: Text = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
         control_region_indices: Optional[Union[List[int], List[Text]]] = None,
+        include_modifiers_in_control_model: bool = False,
         save_model: Optional[Text] = None,
     ) -> Union[CorrelatedBackground, ThirdMomentExpansion]:
 
@@ -136,7 +180,7 @@ class Simplify(spey.ConverterBase):
         # Prepare a JSON patch to separate control and validation regions
         # These regions are generally marked as CR and VR
         if control_region_indices is None:
-            control_region_indices = interpreter.get_CRVR()
+            control_region_indices = interpreter.guess_CRVR()
 
         if len(control_region_indices) == 0:
             raise ConversionError(
@@ -144,7 +188,13 @@ class Simplify(spey.ConverterBase):
             )
 
         for channel in interpreter.get_channels(control_region_indices):
-            interpreter.inject_signal(channel, [0.0] * interpreter.bin_map[channel])
+            interpreter.inject_signal(
+                channel,
+                [0.0] * signal_patch_map[channel]["data"],
+                signal_patch_map[channel]["modifiers"]
+                if include_modifiers_in_control_model
+                else None,
+            )
 
         pdf_wrapper = spey.get_backend("pyhf")
         control_model = pdf_wrapper(
@@ -273,7 +323,7 @@ class Simplify(spey.ConverterBase):
         # yields needs to be reordered properly before constructing the simplified likelihood
         signal_yields = []
         for channel_name in stat_model_pyhf.config.channels:
-            signal_yields += signal_patch_map[channel_name]
+            signal_yields += signal_patch_map[channel_name]["data"]
         # NOTE background yields are first moments in simplified framework not the yield values
         # in the full statistical model!
         background_yields = np.mean(samples, axis=0)
