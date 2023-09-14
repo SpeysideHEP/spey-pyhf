@@ -8,6 +8,13 @@ likelihood frameworks using ``"default_pdf.correlated_background"`` or
 ``"default_pdf.third_moment_expansion"`` models. Details on the 
 `simplified models can be found in this link <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_.
 
+This particular example requires the installation of three packages which can be achieved
+by using the line below
+
+.. code:: bash
+
+    >>> pip install spey spey-pyhf jax
+
 Methodology
 -----------
 
@@ -36,7 +43,7 @@ without loosing the correlations between them.
 
 .. attention::
 
-	This method is highly dependent on which channels or regions are considered as control regions since 
+	This method is highly dependent on which channels or regions are considered within the control model since 
 	this will determine how much of the likelihood is being summarised as a multivariate (skewed) Gaussian.
 
 It is essential to note that, the nuisance parameters of :math:`\mathcal{L}^{\rm c}` does not
@@ -57,8 +64,8 @@ To construct the covariance matrix, one can sample from :math:`\mathcal{L}^{\rm 
 
     \tilde{n}_b \sim \mathcal{L}^{\rm SR}(\mu=0, \tilde{\theta}^{\rm c}, \hat\theta^{\rm SR})
 
-where :math:`\Sigma = {\rm cov}(\tilde{n}_b)`. Similarly one can compute third moments of 
-:math:`\tilde{n}_b` to extend the model for ``"default_pdf.third_moment_expansion"``.
+where :math:`\Sigma = {\rm cov}(\tilde{n}_b)` and :math:`n_b=\mathbb{E}[\tilde{n}_b]`. Similarly one 
+can compute third moments of :math:`\tilde{n}_b` to extend the model for ``"default_pdf.third_moment_expansion"``.
 
 .. note::
 
@@ -132,6 +139,10 @@ simplified likelihood by using ``pyhf.simplify`` backend.
       within the channel list from the background only statistical model dictionary. The channel names
       of the ``statistical_model`` can be extracted via ``list(statistical_model.backend.model.channels)``
       property. For details see :attr:`~spey_pyhf.data.FullStatisticalModelData.channels`.
+    * ``include_modifiers_in_control_model``: This flag enables the usage of modifiers in the control model.
+      note that the yield values will still be zero but the modifiers within the signal model will be copied 
+      to the control model. This flag allows the contribution of the signal uncertainties in the nuisance 
+      covariance matrix as shown in eq. :eq:`eq:hess`.
 
 .. note::
 
@@ -140,9 +151,33 @@ simplified likelihood by using ``pyhf.simplify`` backend.
     include the auxiliary data, hence the final statistical model will only include one uncertainty value
     per histogram bin.
 
+Validation
+----------
+
+Following the above example, we converted the full likelihood provided for ATLAS-SUSY-2019-08 analysis
+into ``"default_pdf.correlated_background"`` model (for details 
+`see dedicated documentation <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_).
+Following results uses all available channels for the control model while including the modifiers of the 
+signal patchset within the control model. The background yields and covariance matrix of the background-only 
+model has been computed by generating 500 samples from the full statistical model. Scan includes 67 randomly
+choosen points in :math:`(m_{\tilde{\chi}^\pm_1/\tilde{\chi}^0_2},m_{\tilde{\chi}_1^0})` mass plane.
+
+Following plot shows the observed exclusion limit comparisson for full statistical model and its simplified 
+version which has been maped on ``"default_pdf.correlated_background"`` model. Data points only includes the
+ones provided by the ATLAS collaboration within HEPData. 
+
+.. image:: ./figs/atlas_susy_2019_08_simp_obs.png
+    :align: center
+    :scale: 70
+    :alt: Exclusion limit comparisson between full and simplified likelihoods for ATLAS-SUSY-2019-08 analysis.
+
+These results can be reproduced by following the prescription described above. Note that the red curve does not
+correspond to the official results since its plotted only using 67 points. The official results can be reproduced
+by using the entire patchset provided by the collaboration.
+
 Acknowledgements
 ----------------
 
 This functionality has been discussed and requested during 
 `8th (Re)interpretation Forum <https://conference.ippp.dur.ac.uk/event/1178/>`_.
-Thanks to Nicholas Wardle and Wolfgang Waltenberger for the lively discussion.
+Thanks to Nicholas Wardle, Sabine Kraml and Wolfgang Waltenberger for the lively discussion.
