@@ -158,9 +158,10 @@ Following the above example, we converted the full likelihood provided for ATLAS
 into ``"default_pdf.correlated_background"`` model (for details 
 `see dedicated documentation <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_).
 Following results uses all available channels for the control model while including the modifiers of the 
-signal patchset within the control model. The background yields and covariance matrix of the background-only 
-model has been computed by generating 500 samples from the full statistical model. Scan includes 67 randomly
-choosen points in :math:`(m_{\tilde{\chi}^\pm_1/\tilde{\chi}^0_2},m_{\tilde{\chi}_1^0})` mass plane.
+signal patchset within the control model. Postfit configuration has been used through out the simulation.
+The background yields and covariance matrix of the background-only model has been computed by generating 
+500 samples from the full statistical model. Scan includes 67 randomly choosen points in 
+:math:`(m_{\tilde{\chi}^\pm_1/\tilde{\chi}^0_2},m_{\tilde{\chi}_1^0})` mass plane.
 
 Following plot shows the observed exclusion limit comparisson for full statistical model and its simplified 
 version which has been maped on ``"default_pdf.correlated_background"`` model. Data points only includes the
