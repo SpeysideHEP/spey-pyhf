@@ -1,5 +1,5 @@
 """Helper function for creating and interpreting pyhf inputs"""
-from typing import Dict, Iterator, List, Text, Union
+from typing import Dict, Iterator, List, Text, Union, Optional
 
 __all__ = ["WorkspaceInterpreter"]
 
@@ -22,14 +22,14 @@ def remove_from_json(idx: int) -> Dict:
     return {"op": "remove", "path": f"/channels/{idx}"}
 
 
-def add_to_json(idx: int, nbins: int, poi_name: Text) -> Dict:
+def add_to_json(idx: int, yields: List[float], modifiers: List[Dict]) -> Dict:
     """
     Keep channel in the json file
 
     Args:
         idx (``int``): index of the channel
-        nbins (``int``): number of bins
-        poi_name (``Text``): name of POI
+        yields (``List[float]``): data
+        modifiers (``List[Dict]``): signal modifiers
 
     Returns:
         ``Dict``:
@@ -38,15 +38,16 @@ def add_to_json(idx: int, nbins: int, poi_name: Text) -> Dict:
     return {
         "op": "add",
         "path": f"/channels/{idx}/samples/0",
-        "value": {
-            "name": "Signal",
-            "data": [0.0] * nbins,
-            "modifiers": [
-                {"data": None, "name": "lumi", "type": "lumi"},
-                {"data": None, "name": poi_name, "type": "normfactor"},
-            ],
-        },
+        "value": {"name": "Signal", "data": yields, "modifiers": modifiers},
     }
+
+
+def _default_modifiers(poi_name: Text) -> List[Dict]:
+    """Retreive default modifiers"""
+    return [
+        {"data": None, "name": "lumi", "type": "lumi"},
+        {"data": None, "name": poi_name, "type": "normfactor"},
+    ]
 
 
 class WorkspaceInterpreter:
@@ -58,12 +59,13 @@ class WorkspaceInterpreter:
         background_only_model (``Dict``): descrioption for the background only statistical model
     """
 
-    __slots__ = ["background_only_model", "_signal_dict"]
+    __slots__ = ["background_only_model", "_signal_dict", "_signal_modifiers"]
 
     def __init__(self, background_only_model: Dict):
         self.background_only_model = background_only_model
         """Background only statistical model description"""
         self._signal_dict = {}
+        self._signal_modifiers = {}
 
     def __getitem__(self, item):
         return self.background_only_model[item]
@@ -108,7 +110,7 @@ class WorkspaceInterpreter:
 
         return "__unknown__"
 
-    def get_CRVR(self) -> List[Text]:
+    def guess_CRVR(self) -> List[Text]:
         """Retreive control and validation channel names by guess"""
         return [
             name
@@ -133,7 +135,9 @@ class WorkspaceInterpreter:
             if idx in channel_index or name in channel_index
         ]
 
-    def inject_signal(self, channel: Text, data: List[float]) -> None:
+    def inject_signal(
+        self, channel: Text, data: List[float], modifiers: Optional[List[Dict]] = None
+    ) -> None:
         """
         Inject signal to the model
 
@@ -157,13 +161,16 @@ class WorkspaceInterpreter:
             )
 
         self._signal_dict[channel] = data
+        self._signal_modifiers[channel] = (
+            _default_modifiers(self.poi_name[0][1]) if modifiers is None else modifiers
+        )
 
     @property
     def signal_per_channel(self) -> Dict[Text, List[float]]:
         """Return signal yields in each channel"""
         return self._signal_dict
 
-    def make_patch(self, measurement_index: int = 0) -> List[Dict]:
+    def make_patch(self) -> List[Dict]:
         """
         Make a JSONPatch for the background only model
 
@@ -181,13 +188,15 @@ class WorkspaceInterpreter:
         if not self._signal_dict:
             raise ValueError("Please add signal yields.")
 
-        bin_map = self.bin_map
-        poi_name = self.poi_name[measurement_index][1]
         patch = []
         to_remove = []
         for ich, channel in enumerate(self.channels):
             if channel in self._signal_dict:
-                patch.append(add_to_json(ich, bin_map[channel], poi_name))
+                patch.append(
+                    add_to_json(
+                        ich, self._signal_dict[channel], self._signal_modifiers[channel]
+                    )
+                )
             else:
                 to_remove.append(remove_from_json(ich))
 
@@ -203,26 +212,31 @@ class WorkspaceInterpreter:
         """Inject signal patch"""
         self._signal_dict = self.patch_to_map(signal_patch=signal_patch)
 
-    def patch_to_map(self, signal_patch: List[Dict]) -> Dict[Text, List[float]]:
+    def patch_to_map(self, signal_patch: List[Dict]) -> Dict[Text, Dict]:
         """
         Convert JSONPatch into signal map
 
         .. code:: python3
 
-            >>> signal_map = {channel_name: [signal_yields]}
+            >>> signal_map = {channel_name: {"data" : signal_yields, "modifiers": signal_modifiers}}
 
 
         Args:
             signal_patch (``List[Dict]``): JSONPatch for the signal
 
         Returns:
-            ``Dict[Text, List[float]]``:
-            signal map
+            ``Dict[Text, Dict]``:
+            signal map including the data and modifiers
         """
         signal_map = {}
         for item in signal_patch:
             if item["op"] == "add":
                 path = int(item["path"].split("/")[2])
                 channel_name = self["channels"][path]["name"]
-                signal_map[channel_name] = item["value"]["data"]
+                signal_map[channel_name] = {
+                    "data": item["value"]["data"],
+                    "modifiers": item["value"].get(
+                        "modifiers", _default_modifiers(poi_name=self.poi_name[0][1])
+                    ),
+                }
         return signal_map
