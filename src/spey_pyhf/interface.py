@@ -166,8 +166,7 @@ class PyhfInterface(BackendBase):
         # NOTE During tests we observed that shifting poi with respect to bounds is not needed.
         _, model, data_org = self.model(expected=expected)
 
-        logpdf = self.manager.jit(model.logpdf)
-        return lambda pars: logpdf(
+        return lambda pars: model.logpdf(
             pars, self.manager.pyhf.tensorlib.astensor(data_org if data is None else data)
         )[0]
 
