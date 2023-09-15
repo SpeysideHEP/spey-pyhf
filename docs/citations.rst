@@ -16,7 +16,7 @@ The BibTeX entry for citing ``spey`` is
         year = "2023"
     }
 
-This plug-in uses ``pyhf`` internally, thus please also cite the following
+This plug-in uses ``pyhf`` internally; thus, please also cite the following
 
 .. code-block:: BibTeX
     
