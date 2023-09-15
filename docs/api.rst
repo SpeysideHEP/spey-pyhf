@@ -12,6 +12,7 @@ Managers
     manager.PyhfManager
     interface.ModelNotDefined
     interface.CombinationError
+    simplify.ConversionError
 
 Interface
 ---------
@@ -27,3 +28,33 @@ Interface
     :undoc-members:
     :show-inheritance:
     :inherited-members:
+
+.. autoclass:: spey_pyhf.simplify.Simplify
+    :members:
+    :undoc-members:
+
+Data classes
+------------
+
+.. autoclass:: spey_pyhf.data.Base
+    :members:
+    :undoc-members:
+
+.. autoclass:: spey_pyhf.data.FullStatisticalModelData
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
+
+.. autoclass:: spey_pyhf.data.SimpleModelData
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
+
+Helper functions
+----------------
+
+.. autoclass:: spey_pyhf.WorkspaceInterpreter
+    :members:
+    :undoc-members:

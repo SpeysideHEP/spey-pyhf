@@ -1,6 +1,7 @@
 """Manager for pyhf integration"""
-from typing import Text, List
-import logging, importlib
+import importlib
+import logging
+from typing import Callable, List, Text
 
 from spey.system.exceptions import MethodNotAvailable
 
@@ -66,3 +67,10 @@ class PyhfManager:
     def backend_accessor(self):
         """access to current pyhf backend"""
         return importlib.import_module(self.backend)
+
+    def jit(self, function: Callable) -> Callable:
+        """Jit the given function if available"""
+        if self.backend == "jax":
+            return self.backend_accessor.jit(function)
+
+        return function

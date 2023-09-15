@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Dict, Text, Union
+from typing import Optional, List, Tuple, Dict, Text, Union, Iterator
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -8,7 +8,7 @@ import numpy as np
 from spey.base import ModelConfig
 from spey import ExpectationType
 
-from . import manager
+from . import manager, WorkspaceInterpreter
 
 
 class Base(ABC):
@@ -192,17 +192,14 @@ class FullStatisticalModelData(Base):
                 self.background_only_model = json.load(f)
 
         self.background_only_model_apriori = copy.deepcopy(self.background_only_model)
+        interpreter = WorkspaceInterpreter(self.background_only_model)
+        interpreter.add_patch(self.signal_patch)
 
         # set data as expected background events
-        obs = []
-        for channel in self.background_only_model_apriori.get("channels", []):
-            current = []
-            for ch in channel["samples"]:
-                if len(current) == 0:
-                    current = [0.0] * len(ch["data"])
-                current = [cur + dt for cur, dt in zip(current, ch["data"])]
-            obs.append({"name": channel["name"], "data": current})
-        self.background_only_model_apriori["observations"] = obs
+        self.background_only_model_apriori["observations"] = [
+            {"name": name, "data": data}
+            for name, data in interpreter.expected_background_yields.items()
+        ]
 
         self.workspace_apriori = manager.pyhf.Workspace(
             self.background_only_model_apriori
@@ -239,21 +236,29 @@ class FullStatisticalModelData(Base):
             -np.min(min_ratio).astype(np.float32) if len(min_ratio) > 0 else -np.inf
         )
 
-        self.metadata = {}
-        for idx, obs in enumerate(self.background_only_model["observations"]):
-            tmp = "__unknown__"
-            # Note that this naming scheme is adhoc, json file is not necessarily named properly
-            if "SR" in obs["name"].upper():
-                tmp = "SR"
-            elif "CR" in obs["name"].upper():
-                tmp = "CR"
-            elif "VR" in obs["name"].upper():
-                tmp = "VR"
-            self.metadata[idx] = {
-                "name": obs["name"],
-                "type": tmp,
-                "nbins": len(obs["data"]),
-            }
+        self._models = {"post": None, "pre": None}
+        # Initialise config
+        model = self()[1]
+
+        self._config = {
+            "poi_index": model.config.poi_index,
+            "minimum_poi": self._minimum_poi,
+            "suggested_init": model.config.suggested_init(),
+            "suggested_bounds": model.config.suggested_bounds(),
+            "parameter_names": model.config.par_names,
+            "suggested_fixed": model.config.suggested_fixed(),
+        }
+
+    @property
+    def channels(self) -> Iterator[Text]:
+        """Return channel names"""
+        return (ch["name"] for ch in self.background_only_model["channels"])
+
+    @property
+    def channel_properties(self) -> Iterator[Tuple[int, Text, int]]:
+        """Returns an iterator for channel index, name and number of bins"""
+        for idx, channel in enumerate(self.channels):
+            yield idx, channel, self.workspace.channel_nbins[channel]
 
     def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
         """
@@ -277,24 +282,34 @@ class FullStatisticalModelData(Base):
             workspace, model and data
         """
         if expected == ExpectationType.apriori:
-            model = self.workspace_apriori.model(
+            if self._models["pre"] is None:
+                self._models["pre"] = self.workspace_apriori.model(
+                    patches=[self.signal_patch],
+                    modifier_settings={
+                        "normsys": {"interpcode": "code4"},
+                        "histosys": {"interpcode": "code4p"},
+                    },
+                )
+
+            return (
+                self.workspace_apriori,
+                self._models["pre"],
+                self.workspace_apriori.data(self._models["pre"]),
+            )
+
+        if self._models["post"] is None:
+            self._models["post"] = self.workspace.model(
                 patches=[self.signal_patch],
                 modifier_settings={
                     "normsys": {"interpcode": "code4"},
                     "histosys": {"interpcode": "code4p"},
                 },
             )
-
-            return self.workspace_apriori, model, self.workspace_apriori.data(model)
-
-        model = self.workspace.model(
-            patches=[self.signal_patch],
-            modifier_settings={
-                "normsys": {"interpcode": "code4"},
-                "histosys": {"interpcode": "code4p"},
-            },
+        return (
+            self.workspace,
+            self._models["post"],
+            self.workspace.data(self._models["post"]),
         )
-        return self.workspace, model, self.workspace.data(model)
 
     def config(
         self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
@@ -313,20 +328,21 @@ class FullStatisticalModelData(Base):
             Model configuration. Information regarding the position of POI in
             parameter list, suggested input and bounds.
         """
-        _, model, _ = self()
-
-        bounds = model.config.suggested_bounds()
-        bounds[model.config.poi_index] = (
+        bounds = copy.deepcopy(self._config["suggested_bounds"])
+        bounds[self._config["poi_index"]] = (
             max(self._minimum_poi, -10.0) if allow_negative_signal else 0.0,
-            bounds[model.config.poi_index][1] if not poi_upper_bound else poi_upper_bound,
+            bounds[self._config["poi_index"]][1]
+            if not poi_upper_bound
+            else poi_upper_bound,
         )
 
         return ModelConfig(
-            poi_index=model.config.poi_index,
+            poi_index=self._config["poi_index"],
             minimum_poi=self._minimum_poi,
-            suggested_init=model.config.suggested_init(),
+            suggested_init=self._config["suggested_init"],
             suggested_bounds=bounds,
-            parameter_names=model.config.par_names,
+            parameter_names=self._config["parameter_names"],
+            suggested_fixed=self._config["suggested_fixed"],
         )
 
     @property

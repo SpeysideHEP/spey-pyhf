@@ -1,16 +1,18 @@
 """pyhf plugin for spey interface"""
 
-from typing import Optional, List, Text, Union, Callable, Tuple, Dict
-import copy, warnings
-import numpy as np
+import copy
+import warnings
+from typing import Callable, Dict, List, Optional, Text, Tuple, Union
 
-from spey.utils import ExpectationType
-from spey.base.backend_base import BackendBase
+import numpy as np
 from spey.base import ModelConfig
-from .utils import objective_wrapper
-from ._version import __version__
+from spey.base.backend_base import BackendBase
+from spey.utils import ExpectationType
+
 from . import manager
-from .data import Base, SimpleModelData, FullStatisticalModelData
+from ._version import __version__
+from .data import Base, FullStatisticalModelData, SimpleModelData
+from .utils import objective_wrapper
 
 __all__ = ["UncorrelatedBackground", "FullStatisticalModel"]
 
@@ -71,7 +73,7 @@ class PyhfInterface(BackendBase):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = ">=0.1.0"
     """Spey version required for the backend"""
     doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""
@@ -313,7 +315,7 @@ class UncorrelatedBackground(PyhfInterface):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = PyhfInterface.spey_requires
     """Spey version required for the backend"""
     doi: List[Text] = PyhfInterface.doi
     """Citable DOI for the backend"""
@@ -400,7 +402,7 @@ class FullStatisticalModel(PyhfInterface):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = "0.1.0"
+    spey_requires: Text = PyhfInterface.spey_requires
     """Spey version required for the backend"""
     doi: List[Text] = PyhfInterface.doi
     """Citable DOI for the backend"""

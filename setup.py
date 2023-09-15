@@ -6,10 +6,10 @@ with open("README.md", mode="r", encoding="utf-8") as f:
 with open("src/spey_pyhf/_version.py", mode="r", encoding="UTF-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
 
-requirements = ["pyhf==0.7.3", "spey>=0.1.0"]
+requirements = ["pyhf==0.7.3", "spey>=0.1.1"]
 
 docs = [
-    "sphinx>=6.1.3",
+    "sphinx==6.2.1",
     "sphinxcontrib-bibtex~=2.1",
     "sphinx-click",
     "sphinx_rtd_theme",
@@ -18,6 +18,7 @@ docs = [
     "sphinx-copybutton>=0.3.2",
     "sphinx-togglebutton>=0.3.0",
     "myst-parser",
+    "sphinx-rtd-size",
 ]
 
 setup(
@@ -40,6 +41,7 @@ setup(
         "spey.backend.plugins": [
             "pyhf.uncorrelated_background = spey_pyhf.interface:UncorrelatedBackground",
             "pyhf = spey_pyhf.interface:FullStatisticalModel",
+            "pyhf.simplify = spey_pyhf.simplify:Simplify",
         ]
     },
     install_requires=requirements,
