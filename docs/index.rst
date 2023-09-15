@@ -14,6 +14,6 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    simplify
    api
    citations
-   releases/changelog-dev
+   releases/changelog-v0.1.1
 
 * :ref:`genindex`
