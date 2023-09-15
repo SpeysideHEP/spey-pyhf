@@ -35,13 +35,18 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",
     "sphinx_click.ext",
+    # "sphinx_toolbox.collapse", # requires sphinx_toolbox to be installed
     "nbsphinx",
     "sphinx_issues",
     "sphinx_copybutton",
     "sphinx_togglebutton",
+    "sphinx_rtd_size",
     "xref",
     "myst_parser",
 ]
+
+# set the width of the page
+sphinx_rtd_size_width = "75%"
 
 # external links
 xref_links = {

@@ -11,14 +11,9 @@ Welcome to the documentation of ``pyhf`` plugin for spey interface
    :caption: Contents:
 
    quick_start
+   simplify
    api
    citations
-
-
-
-Indices and tables
-==================
+   releases/changelog-dev
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
