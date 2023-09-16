@@ -8,7 +8,7 @@ Installation
     >>> pip install spey-pyhf
 
 
-Python >=3.8 is required. This will also automatically install ``pyhf``since it is a requirement.
+Python >=3.8 is required. This will also automatically install ``pyhf`` since it is a requirement.
 For Gradient and Hessian implementations in likelihood optimisation, we recommend also installing ``Jax``.
 
 Once this package is installed, ``spey`` can automatically detect it, which can be tested using 
