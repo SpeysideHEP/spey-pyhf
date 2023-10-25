@@ -1,18 +1,27 @@
 # spey-pyhf
 
-[![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996%20%20[hep-ph]&color=brightgreen)](https://arxiv.org/abs/2307.06996)
+[![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen)](https://arxiv.org/abs/2307.06996)
 [![DOI](https://img.shields.io/static/v1?style=plastic&label=DOI&message=TBA&color=blue)]()
 [![zenodo](https://img.shields.io/static/v1?style=plastic&label=zenodo&message=TBA&color=blue)]()
-[![doc](https://img.shields.io/static/v1?style=plastic&label&message=Online%20%20Documentation&logo=gitbook&logoColor=white&color=gray)](https://speysidehep.github.io/spey-pyhf/)
+[![doc](https://img.shields.io/static/v1?style=plastic&label&message=Documentation&logo=gitbook&logoColor=white&color=gray)](http://spey-pyhf.readthedocs.io/)
 
 [![github](https://img.shields.io/static/v1?style=plastic&label&message=GitHub&logo=github&logoColor=black&color=white)](https://github.com/SpeysideHEP/spey-pyhf)
-[![pypi](https://img.shields.io/static/v1?style=plastic&label&message=pypi%20%20package&logo=python&logoColor=yellow&color=blue)](https://pypi.org/project/spey-pyhf/)
+[![pypi](https://img.shields.io/static/v1?style=plastic&label&message=pypi&logo=python&logoColor=yellow&color=blue)](https://pypi.org/project/spey-pyhf/)
+[![Documentation Status](https://readthedocs.org/projects/spey-pyhf/badge/?version=main&style=plastic)](https://spey-pyhf.readthedocs.io)
 
-``pyhf`` plugin for spey interface. This plug-in can be installed via
+``pyhf`` plugin for spey interface can be found in [PyPi library](https://pypi.org/project/spey-pyhf/) and can be downloaded using
 
 ```bash
-pip install spey-pyhf
+python -m pip install spey-pyhf
 ```
 
 command. Once installed ``spey`` interface will be able to automatically detect it.
-For details on usage please see the [online documentation](https://speysidehep.github.io/spey-pyhf/).
+For details on usage please see the [online documentation](http://spey-pyhf.readthedocs.io/).
+
+If you like to use a specific branch you can either use `make install` or `pip install -e .` after cloning the repository or use the following command
+
+```bash
+python -m pip install --upgrade "git+https://github.com/SpeysideHEP/spey-pyhf"
+```
+
+**Note that `main` branch may not be the stable version.**

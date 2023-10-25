@@ -6,7 +6,7 @@ to reconstruct the original analysis, it might be computationally costly.
 Thus, we implement methodologies to convert full likelihoods into simplified 
 likelihood frameworks using ``"default_pdf.correlated_background"`` or 
 ``"default_pdf.third_moment_expansion"`` models. Details on the 
-`simplified models can be found in this link <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_.
+`simplified models can be found in this link <https://spey.readthedocs.io/en/main/plugins.html#default-pdf-correlated-background>`_.
 
 This particular example requires the installation of three packages, which can be achieved
 by using the line below
@@ -106,7 +106,7 @@ can be constructed as
     ... )
     >>> full_statistical_model.backend.manager.backend = "jax"
 
-where ``background_only`` refers to background-only the JSON file retreived from HEPData and 
+where ``background_only`` refers to background-only the JSON file retrieved from HEPData and 
 ``signal`` refers to a signal patch constructed by the user. Note that the computation of the 
 Hessian in eq. :eq:`eq:hess` currently requires ``pyhf``'s ``jax`` backend, which is ensured
 by the last line in the snippet above. ``full_statistical_model`` can be converted into 
@@ -146,16 +146,16 @@ simplified likelihood by using ``pyhf.simplify`` backend.
 
 .. note::
 
-    Possible leakage of signal into control or validation regions are disregarded by setting the signal
+    Possible leakage of signal into control or validation regions is disregarded by setting the signal
     yields to zero while constructing :math:`\mathcal{L}^{\rm c}`. :math:`\tilde{n}_b` does not
-    include the auxiliary data hence the final statistical model will only include one uncertainty value
+    include the auxiliary data; hence, the final statistical model will only include one uncertainty value
     per histogram bin.
 
 Validation
 ----------
 
 Following the above example, we converted the full likelihood provided for ATLAS-SUSY-2019-08 analysis
-into ``"default_pdf.correlated_background"`` model (for details 
+into the ``"default_pdf.correlated_background"`` model (for details 
 `see dedicated documentation <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_).
 The following results use all available channels for the control model while including the modifiers of the 
 signal patchset within the control model. Postfit configuration has been used throughout the simulation.
@@ -173,7 +173,7 @@ ones provided by the ATLAS collaboration within HEPData.
     :alt: Exclusion limit comparison between full and simplified likelihoods for ATLAS-SUSY-2019-08 analysis.
 
 These results can be reproduced by following the prescription described above. Note that the red curve does not
-correspond to the official results since its plotted only using 67 points. The official results can be reproduced
+correspond to the official results since it is plotted only using 67 points. The official results can be reproduced
 using the entire patch set provided by the collaboration.
 
 Acknowledgements

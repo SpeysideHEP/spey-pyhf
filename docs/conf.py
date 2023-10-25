@@ -35,14 +35,13 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",
     "sphinx_click.ext",
-    # "sphinx_toolbox.collapse", # requires sphinx_toolbox to be installed
     "nbsphinx",
     "sphinx_issues",
     "sphinx_copybutton",
     "sphinx_togglebutton",
-    "sphinx_rtd_size",
     "xref",
     "myst_parser",
+    "sphinx_rtd_size",
 ]
 
 # set the width of the page

@@ -10,11 +10,11 @@ Welcome to the documentation of the ``pyhf`` plugin for Spey
    :maxdepth: 2
    :caption: Contents:
 
-   Spey Documentation <https://speysidehep.github.io/spey/>
+   Spey Documentation <https://spey.readthedocs.io/>
    quick_start
    simplify
    api
    citations
-   releases/changelog-v0.1.1
+   release_notes
 
 * :ref:`genindex`
