@@ -15,6 +15,9 @@
 * Fixed parameters have been added to the constraints list.
   ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
+* Update `pyhf` version.
+  ([#8](https://github.com/SpeysideHEP/spey-pyhf/pull/8))
+
 ## Bug fixes
 
 * Bugfix in apriori likelihood computation for full likelihoods mentioned in
