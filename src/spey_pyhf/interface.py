@@ -444,7 +444,7 @@ class FullStatisticalModel(PyhfInterface):
             ``CombinationError``: Raised if its not possible to combine statistical models.
 
         Returns:
-            :obj:~spey-pyhf.interface.FullStatisticalModel:
+            :obj:`~spey-pyhf.interface.FullStatisticalModel`:
             Combined statistical model.
         """
         assert isinstance(
