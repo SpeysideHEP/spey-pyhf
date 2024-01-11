@@ -6,6 +6,9 @@
 Welcome to the documentation of the ``pyhf`` plugin for Spey
 ============================================================
 
+.. image:: https://zenodo.org/badge/617041391.svg
+   :target: https://zenodo.org/doi/10.5281/zenodo.10493271
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
