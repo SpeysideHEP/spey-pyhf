@@ -33,7 +33,7 @@ setup(
     },
     download_url=f"https://github.com/SpeysideHEP/spey-pyhf/archive/refs/tags/v{version}.tar.gz",
     author="Jack Y. Araz",
-    author_email=("jack.araz@durham.ac.uk"),
+    author_email=("jackaraz@jlab.org"),
     license="MIT",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
