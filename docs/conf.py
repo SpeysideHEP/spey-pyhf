@@ -45,7 +45,7 @@ extensions = [
 ]
 
 # set the width of the page
-sphinx_rtd_size_width = "75%"
+# sphinx_rtd_size_width = "75%"
 
 # external links
 xref_links = {
@@ -56,11 +56,11 @@ xref_links = {
     "1202.3415": ("[arXiv:1202.3415]", "https://doi.org/10.48550/arXiv.1202.3415"),
 }
 
-source_suffix = {
-    ".rst": "restructuredtext",
-    ".txt": "restructuredtext",
-    ".md": "markdown",
-}
+# source_suffix = {
+#     ".rst": "restructuredtext",
+#     ".txt": "restructuredtext",
+#     ".md": "markdown",
+# }
 
 bibtex_default_style = "unsrt"
 
@@ -91,7 +91,36 @@ man_pages = [(master_doc, "spey", "spey Documentation", [author], 1)]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
+
+html_theme_options = {
+    "repository_provider": "github",
+    "repository_url": "https://github.com/SpeysideHEP/spey-pyhf",
+    "use_repository_button": True,  # add a 'link to repository' button
+    "use_issues_button": False,  # add an 'Open an Issue' button
+    "path_to_docs": "docs",
+    "use_edit_page_button": True,
+    "use_fullscreen_button": True,
+    # "launch_buttons": {
+    #     "colab_url": "https://colab.research.google.com/",
+    # },
+    "show_navbar_depth": 1,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/SpeysideHEP/spey-pyhf",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "arXiv",
+            "url": "https://arxiv.org/abs/2307.06996",
+            "icon": "https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen",
+            "type": "url",
+        },
+    ],
+}
+
+
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
