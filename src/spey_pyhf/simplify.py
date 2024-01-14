@@ -46,9 +46,9 @@ class Simplify(spey.ConverterBase):
     An interface to convert pyhf full statistical model prescription into simplified likelihood
     framework as either correlated background or third moment expansion model. For details on simplified
     likelihood framework please see
-    `default plug-ins page <https://speysidehep.github.io/spey/plugins.html#default-plug-ins>`_.
+    `default plug-ins page <https://spey.readthedocs.io/en/main/plugins.html#default-plug-ins>`_.
 
-    Details on methodology can be found `in the online documentation <https://speysidehep.github.io/spey-pyhf/simplify.html>`_.
+    Details on methodology can be found `in the online documentation <https://spey-pyhf.readthedocs.io/en/main/simplify.html>`_.
 
     Args:
         statistical_model (:obj:`~spey.StatisticalModel`): constructed full statistical model
