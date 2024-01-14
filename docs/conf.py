@@ -114,7 +114,13 @@ html_theme_options = {
         {
             "name": "arXiv",
             "url": "https://arxiv.org/abs/2307.06996",
-            "icon": "https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen",
+            "icon": "https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen&logo=arXiv",
+            "type": "url",
+        },
+        {
+            "name": "PyPi",
+            "url": "https://pypi.org/project/spey-pyhf",
+            "icon": "https://img.shields.io/pypi/dm/spey-pyhf?style=plastic&link=https%3A%2F%2Fpypi.org%2Fproject%2Fspey-pyhf",
             "type": "url",
         },
     ],
