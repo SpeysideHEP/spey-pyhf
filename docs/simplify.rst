@@ -67,7 +67,7 @@ To construct the covariance matrix, one can sample from :math:`\mathcal{L}^{\rm 
 where :math:`\Sigma = {\rm cov}(\tilde{n}_b)` and :math:`n_b=\mathbb{E}[\tilde{n}_b]`. Similarly one 
 can compute third moments of :math:`\tilde{n}_b` to extend the model for ``"default_pdf.third_moment_expansion"``.
 
-.. note::
+.. seealso::
 
     Other techniques have been employed to simplify the full statistical models.
     One can find `such a method in this GitHub repository <https://github.com/eschanet/simplify>`_. 
