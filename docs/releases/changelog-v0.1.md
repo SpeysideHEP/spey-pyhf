@@ -1,4 +1,4 @@
-# Release notes v0.1.1
+# Release notes v0.1
 
 ## New features since last release
 
@@ -19,6 +19,9 @@
   ([#8](https://github.com/SpeysideHEP/spey-pyhf/pull/8))
 
 ## Bug fixes
+
+* Bugfix in `simplify` module, where signal injector was not initiating properly.
+ ([#9](https://github.com/SpeysideHEP/spey-pyhf/pull/9))
 
 * Bugfix in apriori likelihood computation for full likelihoods mentioned in
   [#5](https://github.com/SpeysideHEP/spey-pyhf/issues/5).
