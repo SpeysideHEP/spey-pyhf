@@ -190,7 +190,7 @@ class Simplify(spey.ConverterBase):
         for channel in interpreter.get_channels(control_region_indices):
             interpreter.inject_signal(
                 channel,
-                [0.0] * signal_patch_map[channel]["data"],
+                [0.0] * len(signal_patch_map[channel]["data"]),
                 signal_patch_map[channel]["modifiers"]
                 if include_modifiers_in_control_model
                 else None,
