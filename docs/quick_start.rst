@@ -1,5 +1,8 @@
+Quick Start
+===========
+
 Installation
-============
+------------
 
 ``spey-pyhf`` plug-in is available at `pypi <https://pypi.org>`_ , so it can be installed by running:
 
@@ -27,8 +30,8 @@ Once this package is installed, ``spey`` can automatically detect it, which can 
 
 .. _sec_quick_start:
 
-Quick Start
-===========
+First Steps
+-----------
 
 ``"pyhf"`` accessor enables user to access all ``pyhf``'s likelihood building capabilities.
 The function of this accessor accepts a background-only statistical model dictionary as described
