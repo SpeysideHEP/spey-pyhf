@@ -114,13 +114,19 @@ html_theme_options = {
         {
             "name": "arXiv",
             "url": "https://arxiv.org/abs/2307.06996",
-            "icon": "https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen&logo=arXiv",
+            "icon": "https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen",
             "type": "url",
         },
         {
             "name": "PyPi",
             "url": "https://pypi.org/project/spey-pyhf",
-            "icon": "https://img.shields.io/pypi/dm/spey-pyhf?style=plastic&link=https%3A%2F%2Fpypi.org%2Fproject%2Fspey-pyhf",
+            "icon": "https://img.shields.io/pypi/v/spey-pyhf?style=plastic",
+            "type": "url",
+        },
+        {
+            "name": "PyPi",
+            "url": "https://pypi.org/project/spey-pyhf",
+            "icon": "https://img.shields.io/pypi/dm/spey-pyhf?style=plastic",
             "type": "url",
         },
     ],
@@ -130,7 +136,7 @@ html_theme_options = {
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
-html_logo = "_static/logo.png"
+html_logo = "img/spey-logo.png"
 logo_only = True
 
 # Output file base name for HTML help builder.
