@@ -6,6 +6,11 @@
 Welcome to the documentation of the ``pyhf`` plugin for Spey
 ============================================================
 
+.. meta::
+    :property=og:title: spey-pyhf plug-in
+    :property=og:image: https://spey.readthedocs.io/en/main/_static/spey-logo.png
+    :property=og:url: https://spey-pyhf.readthedocs.io/en/main/
+
 .. image:: https://img.shields.io/github/issues/SpeysideHEP/spey-pyhf?style=plastic&logo=github
    :alt: GitHub issues
    :target: https://github.com/SpeysideHEP/spey-pyhf/issues

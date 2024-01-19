@@ -1,6 +1,11 @@
 Converting full statistical models to the simplified likelihood framework
 =========================================================================
 
+.. meta::
+    :property=og:title: Converting full statistical models to the simplified likelihood framework
+    :property=og:image: https://spey.readthedocs.io/en/main/_static/spey-logo.png
+    :property=og:url: https://spey-pyhf.readthedocs.io/en/main/simplify.html
+
 Although full statistical models contain all the necessary information
 to reconstruct the original analysis, it might be computationally costly. 
 Thus, we implement methodologies to convert full likelihoods into simplified 

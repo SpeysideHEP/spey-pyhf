@@ -1,6 +1,12 @@
 Quick Start
 ===========
 
+.. meta::
+    :property=og:title: Quick Start
+    :property=og:description: A beginner's guide.
+    :property=og:image: https://spey.readthedocs.io/en/main/_static/spey-logo.png
+    :property=og:url: https://spey-pyhf.readthedocs.io/en/main/quick_start.html
+
 Installation
 ------------
 
