@@ -61,6 +61,13 @@ print(interpreter.bin_map['SRHMEM_mct2'])
 
 we can inject signal to any channel we like
 
+````{margin}
+```{admonition} Attention!
+:class: attention
+ Notice that the rest of the channels will be removed. If some of the channels are needed during the inference, simply remove the ones with `"op": "remove"` tag from the patch set.
+```
+````
+
 ```{code-cell} ipython3
 interpreter.inject_signal('SRHMEM_mct2', [5.0, 12.0, 4.0])
 ```
