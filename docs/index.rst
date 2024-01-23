@@ -25,6 +25,7 @@ Welcome to the documentation of the ``pyhf`` plugin for Spey
    Spey Documentation <https://spey.readthedocs.io/>
    quick_start
    simplify
+   tutorials
    api
    citations
    release_notes
