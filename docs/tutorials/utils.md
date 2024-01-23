@@ -64,7 +64,7 @@ we can inject signal to any channel we like
 ````{margin}
 ```{admonition} Attention!
 :class: attention
- Notice that the rest of the channels will be removed. If some of the channels are needed during the inference, simply remove the ones with `"op": "remove"` tag from the patch set.
+ Notice that the rest of the channels will be removed. If some of the channels are needed during the inference, simply remove the ones with `"op": "remove"` tag from the patch set. Patch set can be generated via `interpreter.make_patch()` function.
 ```
 ````
 
