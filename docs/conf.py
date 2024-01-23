@@ -35,14 +35,18 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",
     "sphinx_click.ext",
-    "nbsphinx",
+    # "nbsphinx",
     "sphinx_issues",
     "sphinx_copybutton",
     "sphinx_togglebutton",
     "xref",
-    "myst_parser",
+    # "myst_parser",
     "sphinx_rtd_size",
+    # "sphinx_thebe",
+    "myst_nb",
 ]
+nb_execution_mode = "off"
+
 
 # set the width of the page
 # sphinx_rtd_size_width = "75%"
