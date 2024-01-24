@@ -42,6 +42,7 @@ with open("/PATH/TO/BkgOnly.json", "r") as f:
 {py:obj}`spey_pyhf.helper_functions.WorkspaceInterpreter` scans the background-only dictionary and extracts relevant information such as channel names:
 
 ```{code-cell} ipython3
+interpreter = WorkspaceInterpreter(bkg_only)
 print(list(interpreter.channels))
 ```
 
