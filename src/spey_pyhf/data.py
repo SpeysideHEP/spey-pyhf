@@ -204,7 +204,9 @@ class FullStatisticalModelData(Base):
         model = self()[1]
 
         min_ratio = []
-        for idc, channel in enumerate(self._model.config.channels):
+        for idc, channel in enumerate(
+            (ch for ch in self.background_only_model if ch in self._model.config.channels)
+        ):
             current_signal = []
             for sigch in self.signal_patch:
                 if idc == int(sigch["path"].split("/")[2]):
