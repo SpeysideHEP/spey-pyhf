@@ -18,13 +18,13 @@ The BibTeX entry for citing ``spey`` is
 
     @software{spey_pyhf_zenodo,
         author    = {Jack Y. Araz},
-        title     = {SpeysideHEP/spey-pyhf: v0.1.3},
+        title     = {SpeysideHEP/spey-pyhf: v0.1.4},
         month     = jan,
         year      = 2024,
         publisher = {Zenodo},
-        version   = {v0.1.3},
-        doi       = {10.5281/zenodo.10527973},
-        url       = {https://doi.org/10.5281/zenodo.10527973}
+        version   = {v0.1.4},
+        doi       = {10.5281/zenodo.10569195},
+        url       = {https://doi.org/10.5281/zenodo.10569195}
     }
 
 This plug-in uses ``pyhf`` internally; thus, please also cite the following
