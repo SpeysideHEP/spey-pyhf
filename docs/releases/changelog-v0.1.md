@@ -1,6 +1,6 @@
 # Release notes v0.1
 
-## New features since last release
+## New features since the last release
 
 * A mapping functionality has been developed between ``pyhf``'s full
   statistical models and simplified likelihoods framework. Methodology
@@ -23,7 +23,7 @@
 
 ## Bug fixes
 
-* Bugfix in `simplify` module, where signal injector was not initiating properly.
+* Bugfix in `simplify` module, where signal injector was not initiated properly.
  ([#9](https://github.com/SpeysideHEP/spey-pyhf/pull/9))
 
 * Bugfix in apriori likelihood computation for full likelihoods mentioned in
