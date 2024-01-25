@@ -2,7 +2,7 @@
 
 [![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen&logo=arXiv)](https://arxiv.org/abs/2307.06996)
 [![DOI](https://img.shields.io/static/v1?style=plastic&label=DOI&message=TBA&color=blue)]()
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10527973.svg)](https://doi.org/10.5281/zenodo.10527973)
+[![DOI](https://zenodo.org/badge/617041391.svg)](https://zenodo.org/badge/latestdoi/617041391)
 [![doc](https://img.shields.io/static/v1?style=plastic&label&message=Documentation&logo=gitbook&logoColor=white&color=gray)](http://spey-pyhf.readthedocs.io/)
 
 [![github](https://img.shields.io/static/v1?style=plastic&label&message=GitHub&logo=github&logoColor=black&color=white)](https://github.com/SpeysideHEP/spey-pyhf)
