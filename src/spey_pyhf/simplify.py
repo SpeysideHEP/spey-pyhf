@@ -140,7 +140,7 @@ class Simplify(spey.ConverterBase):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = ">=0.1.1"
+    spey_requires: Text = ">=0.1.4,<0.2.0"
     """Spey version required for the backend"""
 
     def __call__(
