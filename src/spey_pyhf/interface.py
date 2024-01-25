@@ -73,7 +73,7 @@ class PyhfInterface(BackendBase):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = ">=0.1.4,<0.2.0"
+    spey_requires: Text = ">=0.1.5,<0.2.0"
     """Spey version required for the backend"""
     doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""
