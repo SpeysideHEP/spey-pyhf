@@ -204,9 +204,7 @@ class FullStatisticalModelData(Base):
         model = self()[1]
 
         min_ratio = []
-        for idc, channel in enumerate(
-            (ch for ch in self.background_only_model if ch in self._model.config.channels)
-        ):
+        for idc, channel in enumerate(self.background_only_model.get("channels", [])):
             current_signal = []
             for sigch in self.signal_patch:
                 if idc == int(sigch["path"].split("/")[2]):
@@ -255,7 +253,11 @@ class FullStatisticalModelData(Base):
         for idx, channel in enumerate(self.channels):
             yield idx, channel, self.workspace.channel_nbins[channel]
 
-    def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
+    def __call__(
+        self,
+        expected: ExpectationType = ExpectationType.observed,
+        include_aux: bool = True,
+    ) -> Tuple:
         """
         Retreive pyhf workspace
 
@@ -271,6 +273,7 @@ class FullStatisticalModelData(Base):
                 the truth.
               * :obj:`~spey.ExpectationType.apriori`: Computes the expected p-values with via pre-fit
                 prescription which means that the SM will be assumed to be the truth.
+            include_aux (`bool`, default `True`): Include auxiliary data.
 
         Returns:
             ``Tuple``:
@@ -286,21 +289,19 @@ class FullStatisticalModelData(Base):
             )
 
         if expected == ExpectationType.apriori:
-            data = []
-            for ch in self._model.config.channels:
-                data += self.expected_background_yields[ch]
-
-            return (
-                self.workspace,
-                self._model,
-                data + self._model.config.auxdata,
+            data = sum(
+                (
+                    self.expected_background_yields[ch]
+                    for ch in self._model.config.channels
+                ),
+                [],
             )
+            if include_aux:
+                data += self._model.config.auxdata
+        else:
+            data = self.workspace.data(self._model, include_auxdata=include_aux)
 
-        return (
-            self.workspace,
-            self._model,
-            self.workspace.data(self._model),
-        )
+        return self.workspace, self._model, data
 
     def config(
         self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
