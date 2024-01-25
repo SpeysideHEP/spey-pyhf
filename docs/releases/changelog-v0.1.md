@@ -18,6 +18,9 @@
 * Update `pyhf` version.
   ([#8](https://github.com/SpeysideHEP/spey-pyhf/pull/8))
 
+* Model loading has been improved for prefit and postfit scenarios.
+  ([#10](https://github.com/SpeysideHEP/spey-pyhf/pull/10))
+
 ## Bug fixes
 
 * Bugfix in `simplify` module, where signal injector was not initiating properly.
