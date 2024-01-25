@@ -1,7 +1,7 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
 import copy
 import warnings
-from typing import Callable, List, Optional, Text, Union
+from typing import Callable, List, Optional, Text, Union, Literal
 
 import numpy as np
 import spey
@@ -140,14 +140,16 @@ class Simplify(spey.ConverterBase):
     """Version of the backend"""
     author: Text = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = ">=0.1.1"
+    spey_requires: Text = ">=0.1.5,<0.2.0"
     """Spey version required for the backend"""
 
     def __call__(
         self,
         statistical_model: spey.StatisticalModel,
-        fittype: Text = "postfit",
-        convert_to: Text = "default_pdf.correlated_background",
+        fittype: Literal["postfit", "prefit"] = "postfit",
+        convert_to: Literal[
+            "default_pdf.correlated_background", "default_pdf.third_moment_expansion"
+        ] = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
         control_region_indices: Optional[Union[List[int], List[Text]]] = None,
         include_modifiers_in_control_model: bool = False,

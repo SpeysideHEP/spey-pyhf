@@ -2,8 +2,10 @@
 
 [![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen&logo=arXiv)](https://arxiv.org/abs/2307.06996)
 [![DOI](https://img.shields.io/static/v1?style=plastic&label=DOI&message=TBA&color=blue)]()
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10527973.svg)](https://doi.org/10.5281/zenodo.10527973)
+[![DOI](https://zenodo.org/badge/617041391.svg)](https://zenodo.org/badge/latestdoi/617041391)
 [![doc](https://img.shields.io/static/v1?style=plastic&label&message=Documentation&logo=gitbook&logoColor=white&color=gray)](http://spey-pyhf.readthedocs.io/)
+
+<img src="https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-logo.png" alt="Spey logo" style="float: right; margin-right: 20px" align="right" width=250px/>
 
 [![github](https://img.shields.io/static/v1?style=plastic&label&message=GitHub&logo=github&logoColor=black&color=white)](https://github.com/SpeysideHEP/spey-pyhf)
 [![PyPI - Version](https://img.shields.io/pypi/v/spey-pyhf?style=plastic)](https://pypi.org/project/spey-pyhf/)
