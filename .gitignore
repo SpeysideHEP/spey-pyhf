@@ -132,6 +132,6 @@ dmypy.json
 .vscode
 
 # ignore docs
-_build/*
-_generated/*
-_static/*
+docs/_generated/*
+docs/ZENODO.rst
+docs/ZENODO-PYHF.rst

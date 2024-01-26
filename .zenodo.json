@@ -1,0 +1,46 @@
+{
+    "description": "pyhf plug-in for spey package",
+    "license": "MIT",
+    "title": "SpeysideHEP/spey-pyhf: v0.1.4",
+    "version": "v0.1.4",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Thomas Jefferson National Accelerator Facility",
+            "name": "Araz, Jack Y.",
+            "orcid": "0000-0001-8721-8042"
+        }
+    ],
+    "access_right": "open",
+    "keywords": [
+        "physics",
+        "bsm",
+        "statistics",
+        "fitting",
+        "scipy",
+        "auto-differentiation"
+    ],
+    "related_identifiers": [
+        {
+            "scheme": "url",
+            "identifier": "https://github.com/SpeysideHEP/spey-pyhf/tree/v0.1.4",
+            "relation": "isSupplementTo"
+        },
+        {
+            "scheme": "url",
+            "identifier": "https://spey-pyhf.readthedocs.io/",
+            "relation": "isDocumentedBy"
+        },
+        {
+            "scheme": "doi",
+            "identifier": "10.48550/arXiv.2307.06996",
+            "relation": "isDocumentedBy",
+            "resource_type": "publication-article"
+        },
+        {
+            "scheme": "url",
+            "identifier": "https://github.com/scikit-hep/pyhf",
+            "relation": "requires"
+        }
+    ]
+}
