@@ -174,39 +174,40 @@ pyhf_zenodo_path = Path("ZENODO-PYHF.rst")
 if not zenodo_path.exists() or not pyhf_zenodo_path.exists():
     import textwrap
 
+    labels = {
+        "spey_zenodo": "10156353",
+        "spey_pyhf_zenodo": "10493271",
+        "pyhf_zenodo": "1169739",
+    }
     try:
         import requests
 
-        response = requests.get(
-            "https://zenodo.org/api/records/10493271",
-            headers={"accept": "application/x-bibtex"},
-            timeout=5,
-        )
-        response.encoding = "utf-8"
+        def retreive_bibtex(identifier: str, label: str) -> str:
+            """retreive bibtex from zenodo"""
+            response = requests.get(
+                f"https://zenodo.org/api/records/{identifier}",
+                headers={"accept": "application/x-bibtex"},
+                timeout=5,
+            )
+            response.encoding = "utf-8"
+            txt = response.text
+            txt = txt.replace(re.search("@software{(.+?),\n", txt).group(1), label)
+            return textwrap.indent(txt, " " * 4)
 
-        txt = response.text
-        linker = re.search("@software{(.+?),\n", txt).group(1)
-        txt = txt.replace(linker, "spey_pyhf_zenodo")
-        zenodo_record = ".. code-block:: bibtex\n\n" + textwrap.indent(txt, " " * 4)
-
-        # pyhf record
-        response = requests.get(
-            "https://zenodo.org/api/records/1169739",
-            headers={"accept": "application/x-bibtex"},
-            timeout=5,
-        )
-        response.encoding = "utf-8"
-
-        txt = response.text
-        linker = re.search("@software{(.+?),\n", txt).group(1)
-        txt = txt.replace(linker, "pyhf_zenodo")
-        pyhf_zenodo_record = ".. code-block:: bibtex\n\n" + textwrap.indent(txt, " " * 4)
+        record = {
+            key: retreive_bibtex(identifier, key) for key, identifier in labels.items()
+        }
     except Exception as e:
         warnings.warn("Failed to retrieve Zenodo record for Spey: " f"{str(e)}")
-        zenodo_record = "`Retrieve the Zenodo record for spey-pyhf plug-in here. <https://zenodo.org/record/10493271>`_"
-        pyhf_zenodo_record = "`Retrieve the Zenodo record for pyhf here. <https://zenodo.org/record/1169739>`_"
+        record = {
+            key: f"`Retrieve the {key.replace('_', '-')} record here. "
+            f"<https://zenodo.org/record/{identifier}>`_"
+            for key, identifier in labels.items()
+        }
 
     with open(zenodo_path, "w", encoding="utf-8") as f:
-        f.write(zenodo_record)
+        f.write(".. code-block:: bibtex\n\n")
+        for idx, key in enumerate(["spey", "spey_pyhf"]):
+            f.write(record[key + "_zenodo"] + "\n\n" * (idx == 0))
     with open(pyhf_zenodo_path, "w", encoding="utf-8") as f:
-        f.write(pyhf_zenodo_record)
+        f.write(".. code-block:: bibtex\n\n" + record["pyhf_zenodo"])
