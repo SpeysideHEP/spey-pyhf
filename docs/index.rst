@@ -15,6 +15,10 @@ Welcome to the documentation of the ``pyhf`` plugin for Spey
    :alt: GitHub issues
    :target: https://github.com/SpeysideHEP/spey-pyhf/issues
 
+.. image:: https://img.shields.io/static/v1?style=plastic&label=DOI&message=10.21468/SciPostPhys.16.1.032&color=blue
+    :alt: SciPost Phys DOI
+    :target: https://scipost.org/10.21468/SciPostPhys.16.1.032
+
 .. image:: https://zenodo.org/badge/617041391.svg
    :target: https://zenodo.org/badge/latestdoi/617041391
 

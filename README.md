@@ -1,7 +1,7 @@
 # spey-pyhf
 
-[![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen&logo=arXiv)](https://arxiv.org/abs/2307.06996)
-[![DOI](https://img.shields.io/static/v1?style=plastic&label=DOI&message=TBA&color=blue)]()
+[![arxiv](https://img.shields.io/static/v1?style=plastic&label=arXiv&message=2307.06996&color=brightgreen)](https://arxiv.org/abs/2307.06996)
+[![DOI](https://img.shields.io/static/v1?style=plastic&label=DOI&message=10.21468/SciPostPhys.16.1.032&color=blue)](https://scipost.org/10.21468/SciPostPhys.16.1.032)
 [![DOI](https://zenodo.org/badge/617041391.svg)](https://zenodo.org/badge/latestdoi/617041391)
 [![doc](https://img.shields.io/static/v1?style=plastic&label&message=Documentation&logo=gitbook&logoColor=white&color=gray)](http://spey-pyhf.readthedocs.io/)
 
