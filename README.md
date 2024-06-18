@@ -5,7 +5,7 @@
 [![DOI](https://zenodo.org/badge/617041391.svg)](https://zenodo.org/badge/latestdoi/617041391)
 [![doc](https://img.shields.io/static/v1?style=plastic&label&message=Documentation&logo=gitbook&logoColor=white&color=gray)](http://spey-pyhf.readthedocs.io/)
 
-<img src="https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-logo.png" alt="Spey logo" style="float: right; margin-right: 20px" align="right" width=250px/>
+<img src="https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png" alt="Spey logo" style="float: right; margin-right: 20px" align="right" width=250px/>
 
 [![github](https://img.shields.io/static/v1?style=plastic&label&message=GitHub&logo=github&logoColor=black&color=white)](https://github.com/SpeysideHEP/spey-pyhf)
 [![PyPI - Version](https://img.shields.io/pypi/v/spey-pyhf?style=plastic)](https://pypi.org/project/spey-pyhf/)
