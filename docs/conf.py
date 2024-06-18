@@ -137,8 +137,8 @@ html_theme_options = {
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
-html_logo = "https://spey.readthedocs.io/en/main/_static/spey-plug-in.png"
-html_favicon = "https://spey.readthedocs.io/en/main/_static/spey-plug-in.png"
+html_logo = "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
+html_favicon = "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
 logo_only = True
 
 # Output file base name for HTML help builder.
