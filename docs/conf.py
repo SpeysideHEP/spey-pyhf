@@ -130,12 +130,6 @@ html_theme_options = {
             "icon": "https://img.shields.io/pypi/v/spey-pyhf?style=plastic",
             "type": "url",
         },
-        {
-            "name": "PyPi",
-            "url": "https://pypi.org/project/spey-pyhf",
-            "icon": "https://img.shields.io/pypi/dm/spey-pyhf?style=plastic",
-            "type": "url",
-        },
     ],
 }
 
@@ -143,8 +137,8 @@ html_theme_options = {
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
-html_logo = "https://spey.readthedocs.io/en/main/_static/spey-logo.png"
-html_favicon = "https://spey.readthedocs.io/en/main/_static/spey-logo.png"
+html_logo = "https://spey.readthedocs.io/en/main/_static/spey-plug-in.png"
+html_favicon = "https://spey.readthedocs.io/en/main/_static/spey-plug-in.png"
 logo_only = True
 
 # Output file base name for HTML help builder.
