@@ -9,7 +9,6 @@
 
 [![github](https://img.shields.io/static/v1?style=plastic&label&message=GitHub&logo=github&logoColor=black&color=white)](https://github.com/SpeysideHEP/spey-pyhf)
 [![PyPI - Version](https://img.shields.io/pypi/v/spey-pyhf?style=plastic)](https://pypi.org/project/spey-pyhf/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/spey-pyhf?style=plastic&link=https%3A%2F%2Fpypi.org%2Fproject%2Fspey-pyhf)](https://pypi.org/project/spey-pyhf/)
 [![Documentation Status](https://readthedocs.org/projects/spey-pyhf/badge/?version=main&style=plastic)](https://spey-pyhf.readthedocs.io)
 [![GitHub License](https://img.shields.io/github/license/SpeysideHEP/spey-pyhf?style=plastic)](https://github.com/SpeysideHEP/spey-pyhf/blob/main/LICENSE)
 
