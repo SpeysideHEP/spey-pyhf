@@ -1,14 +1,16 @@
-from typing import Optional, List, Tuple, Dict, Text, Union, Iterator
-
-from dataclasses import dataclass
+import copy
+import json
+import os
 from abc import ABC, abstractmethod
-import json, copy, os
+from dataclasses import dataclass
+from typing import Dict, Iterator, List, Optional, Text, Tuple, Union
+
 import numpy as np
-
-from spey.base import ModelConfig
 from spey import ExpectationType
+from spey.base import ModelConfig
+from spey.system.exceptions import InvalidInput
 
-from . import manager, WorkspaceInterpreter
+from . import WorkspaceInterpreter, manager
 
 
 class Base(ABC):
@@ -289,13 +291,31 @@ class FullStatisticalModelData(Base):
             )
 
         if expected == ExpectationType.apriori:
-            data = sum(
-                (
-                    self.expected_background_yields[ch]
+            try:
+                data = sum(
+                    (
+                        self.expected_background_yields[ch]
+                        for ch in self._model.config.channels
+                    ),
+                    [],
+                )
+            except KeyError as err:
+                # provide a useful error message to guide the user to the solution
+                missing_channels = [
+                    ch
                     for ch in self._model.config.channels
-                ),
-                [],
-            )
+                    if ch not in self.expected_background_yields
+                ]
+                raise InvalidInput(
+                    "Unable to construct expected data. "
+                    + (len(missing_channels) > 0)
+                    * (
+                        "\nThis is likely due to missing channels in the signal patch. "
+                        + "The missing channels are: "
+                        + ", ".join(missing_channels)
+                        + "\nPlease provide appropriate action for the missing channels to continue."
+                    )
+                ) from err
             if include_aux:
                 data += self._model.config.auxdata
         else:
