@@ -30,6 +30,9 @@
   [#5](https://github.com/SpeysideHEP/spey-pyhf/issues/5).
   ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
+* Add an error message for incomplete patch set
+  ([#12](https://github.com/SpeysideHEP/spey-pyhf/pull/12))
+
 ## Contributors
 
 This release contains contributions from (in alphabetical order):
