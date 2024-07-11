@@ -65,7 +65,7 @@ we can inject signal to any channel we like
 ````{margin}
 ```{admonition} Attention!
 :class: attention
- Notice that the rest of the channels will be removed. If some of the channels are needed during the inference, simply remove the ones with `"op": "remove"` tag from the patch set. Patch set can be generated via `interpreter.make_patch()` function.
+ Notice that the rest of the channels will be added without any signal yields. If some of these channels need to be removed from the patch set, they can be added to the remove list via the ``remove_channel()`` function. **Note:** This behaviour has been updated in ``v0.1.5``. In the older versions, the channels that were not declared were removed.
 ```
 ````
 
@@ -73,7 +73,7 @@ we can inject signal to any channel we like
 interpreter.inject_signal('SRHMEM_mct2', [5.0, 12.0, 4.0])
 ```
 
-Notice that I only added 3 inputs since the `"SRHMEM_mct2"` region has only 3 bins. One can inject signals to as many channels as one wants, but for simplicity, we will use only one channel. Now we are ready to export this signal patch and compute the exclusion limit
+Notice that we only added 3 inputs since the `"SRHMEM_mct2"` region has only 3 bins. One can inject signals to as many channels as one wants, but for simplicity, we will use only one channel. Now we are ready to export this signal patch and compute the exclusion limit
 
 ```{code-cell} ipython3
 pdf_wrapper = spey.get_backend("pyhf")
