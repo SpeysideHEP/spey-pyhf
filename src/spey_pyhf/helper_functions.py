@@ -245,6 +245,8 @@ class WorkspaceInterpreter:
         """
         Remove channel from the likelihood
 
+        .. versionadded:: 0.1.5
+
         Args:
             channel_name (``Text``): name of the channel to be removed
         """
@@ -260,7 +262,12 @@ class WorkspaceInterpreter:
 
     @property
     def remove_list(self) -> List[Text]:
-        """Channels to be removed from the model"""
+        """
+        Channels to be removed from the model
+
+        .. versionadded:: 0.1.5
+
+        """
         return self._to_remove
 
     def patch_to_map(
@@ -276,7 +283,9 @@ class WorkspaceInterpreter:
 
         Args:
             signal_patch (``List[Dict]``): JSONPatch for the signal
-            return_remove_list (``bool``): Inclure channels to be removed in the output
+            return_remove_list (``bool``, default ``False``): Inclure channels to be removed in the output
+
+                .. versionadded:: 0.1.5
 
         Returns:
             ``Tuple[Dict[Text, Dict], List[Text]]`` or ``Dict[Text, Dict]``:
