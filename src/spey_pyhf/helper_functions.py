@@ -1,5 +1,6 @@
 """Helper function for creating and interpreting pyhf inputs"""
-from typing import Dict, Iterator, List, Text, Union, Optional
+import logging
+from typing import Dict, Iterator, List, Optional, Text, Tuple, Union
 
 __all__ = ["WorkspaceInterpreter"]
 
@@ -8,7 +9,10 @@ def __dir__():
     return __all__
 
 
-def remove_from_json(idx: int) -> Dict:
+log = logging.getLogger("Spey")
+
+
+def remove_from_json(idx: int) -> Dict[Text, Text]:
     """
     Remove channel from the json file
 
@@ -16,7 +20,7 @@ def remove_from_json(idx: int) -> Dict:
         idx (``int``): index of the channel
 
     Returns:
-        ``Dict``:
+        ``Dict[Text, Text]``:
         JSON patch
     """
     return {"op": "remove", "path": f"/channels/{idx}"}
@@ -59,13 +63,19 @@ class WorkspaceInterpreter:
         background_only_model (``Dict``): descrioption for the background only statistical model
     """
 
-    __slots__ = ["background_only_model", "_signal_dict", "_signal_modifiers"]
+    __slots__ = [
+        "background_only_model",
+        "_signal_dict",
+        "_signal_modifiers",
+        "_to_remove",
+    ]
 
     def __init__(self, background_only_model: Dict):
         self.background_only_model = background_only_model
         """Background only statistical model description"""
         self._signal_dict = {}
         self._signal_modifiers = {}
+        self._to_remove = []
 
     def __getitem__(self, item):
         return self.background_only_model[item]
@@ -89,8 +99,9 @@ class WorkspaceInterpreter:
     def expected_background_yields(self) -> Dict[Text, List[float]]:
         """Retreive expected background yields with respect to signal injection"""
         yields = {}
+        undefined_channels = []
         for channel in self["channels"]:
-            if channel["name"] in self._signal_dict:
+            if channel["name"] not in self.remove_list:
                 yields[channel["name"]] = []
                 for smp in channel["samples"]:
                     if len(yields[channel["name"]]) == 0:
@@ -98,6 +109,19 @@ class WorkspaceInterpreter:
                     yields[channel["name"]] = [
                         ch + dt for ch, dt in zip(yields[channel["name"]], smp["data"])
                     ]
+                if channel["name"] not in self._signal_dict:
+                    undefined_channels.append(channel["name"])
+        if len(undefined_channels) > 0:
+            log.warning(
+                "Some of the channels are not defined in the patch set, "
+                "these channels will be kept in the statistical model. "
+            )
+            log.warning(
+                "If these channels are meant to be removed, please indicate them in the patch set."
+            )
+            log.warning(
+                "Please check the following channel(s): " + ", ".join(undefined_channels)
+            )
         return yields
 
     def guess_channel_type(self, channel_name: Text) -> Text:
@@ -197,8 +221,10 @@ class WorkspaceInterpreter:
                         ich, self._signal_dict[channel], self._signal_modifiers[channel]
                     )
                 )
-            else:
+            elif channel in self._to_remove:
                 to_remove.append(remove_from_json(ich))
+            else:
+                log.warning(f"Undefined channel in the patch set: {channel}")
 
         to_remove.sort(key=lambda p: p["path"].split("/")[-1], reverse=True)
 
@@ -207,12 +233,46 @@ class WorkspaceInterpreter:
     def reset_signal(self) -> None:
         """Clear the signal map"""
         self._signal_dict = {}
+        self._to_remove = []
 
     def add_patch(self, signal_patch: List[Dict]) -> None:
         """Inject signal patch"""
-        self._signal_dict = self.patch_to_map(signal_patch=signal_patch)
+        self._signal_dict, self._to_remove = self.patch_to_map(
+            signal_patch=signal_patch, return_remove_list=True
+        )
 
-    def patch_to_map(self, signal_patch: List[Dict]) -> Dict[Text, Dict]:
+    def remove_channel(self, channel_name: Text) -> None:
+        """
+        Remove channel from the likelihood
+
+        .. versionadded:: 0.1.5
+
+        Args:
+            channel_name (``Text``): name of the channel to be removed
+        """
+        if channel_name in self.channels:
+            if channel_name not in self._to_remove:
+                self._to_remove.append(channel_name)
+        else:
+            log.error(
+                f"Channel {channel_name} does not exist in the background only model. "
+                + "The available channels are "
+                + ", ".join(list(self.channels))
+            )
+
+    @property
+    def remove_list(self) -> List[Text]:
+        """
+        Channels to be removed from the model
+
+        .. versionadded:: 0.1.5
+
+        """
+        return self._to_remove
+
+    def patch_to_map(
+        self, signal_patch: List[Dict], return_remove_list: bool = False
+    ) -> Union[Tuple[Dict[Text, Dict], List[Text]], Dict[Text, Dict]]:
         """
         Convert JSONPatch into signal map
 
@@ -223,20 +283,28 @@ class WorkspaceInterpreter:
 
         Args:
             signal_patch (``List[Dict]``): JSONPatch for the signal
+            return_remove_list (``bool``, default ``False``): Inclure channels to be removed in the output
+
+                .. versionadded:: 0.1.5
 
         Returns:
-            ``Dict[Text, Dict]``:
-            signal map including the data and modifiers
+            ``Tuple[Dict[Text, Dict], List[Text]]`` or ``Dict[Text, Dict]``:
+            signal map including the data and modifiers and the list of channels to be removed.
         """
         signal_map = {}
+        to_remove = []
         for item in signal_patch:
+            path = int(item["path"].split("/")[2])
+            channel_name = self["channels"][path]["name"]
             if item["op"] == "add":
-                path = int(item["path"].split("/")[2])
-                channel_name = self["channels"][path]["name"]
                 signal_map[channel_name] = {
                     "data": item["value"]["data"],
                     "modifiers": item["value"].get(
                         "modifiers", _default_modifiers(poi_name=self.poi_name[0][1])
                     ),
                 }
+            elif item["op"] == "remove":
+                to_remove.append(channel_name)
+        if return_remove_list:
+            return signal_map, to_remove
         return signal_map

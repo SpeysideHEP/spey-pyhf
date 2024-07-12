@@ -21,6 +21,9 @@
 * Model loading has been improved for prefit and postfit scenarios.
   ([#10](https://github.com/SpeysideHEP/spey-pyhf/pull/10))
 
+* Improve undefined channel handling in the patchset
+  ([#12](https://github.com/SpeysideHEP/spey-pyhf/pull/12))
+
 ## Bug fixes
 
 * Bugfix in `simplify` module, where signal injector was not initiated properly.
