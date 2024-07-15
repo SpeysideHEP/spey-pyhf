@@ -310,13 +310,16 @@ class Simplify(spey.ConverterBase):
                     # Some of the samples can lead to problems while sampling from a poisson distribution.
                     # e.g. poisson requires positive lambda values to sample from. If sample leads to a negative
                     # lambda value continue sampling to avoid that point.
+                    log.debug("Problem with the sample generation")
+                    log.debug(
+                        f"Nuisance parameters: {current_nui_params if new_params is None else new_params}"
+                    )
                     continue
 
         if len(warnings_list) > 0:
-            warnings.warn(
-                message=f"{len(warnings_list)} warning(s) generated during sampling."
-                " This might be due to edge cases in nuisance parameter sampling.",
-                category=RuntimeWarning,
+            log.warning(
+                f"{len(warnings_list)} warning(s) generated during sampling."
+                " This might be due to edge cases in nuisance parameter sampling."
             )
 
         samples = np.vstack(samples)
