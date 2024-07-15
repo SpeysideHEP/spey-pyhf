@@ -1,7 +1,8 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
 import copy
+import logging
 import warnings
-from typing import Callable, List, Optional, Text, Union, Literal
+from typing import Callable, List, Literal, Optional, Text, Union
 
 import numpy as np
 import spey
@@ -16,6 +17,9 @@ from ._version import __version__
 
 def __dir__():
     return []
+
+
+log = logging.getLogger("Spey")
 
 
 class ConversionError(Exception):
@@ -175,6 +179,7 @@ class Simplify(spey.ConverterBase):
         }[fittype]
 
         interpreter = WorkspaceInterpreter(bkgonly_model)
+        bin_map = interpreter.bin_map
 
         # configure signal patch map with respect to channel names
         signal_patch_map = interpreter.patch_to_map(signal_patch)
@@ -190,13 +195,14 @@ class Simplify(spey.ConverterBase):
             )
 
         for channel in interpreter.get_channels(control_region_indices):
-            interpreter.inject_signal(
-                channel,
-                [0.0] * len(signal_patch_map[channel]["data"]),
-                signal_patch_map[channel]["modifiers"]
-                if include_modifiers_in_control_model
-                else None,
-            )
+            if channel in signal_patch_map:
+                interpreter.inject_signal(
+                    channel,
+                    [0.0] * bin_map[channel],
+                    signal_patch_map[channel]["modifiers"]
+                    if include_modifiers_in_control_model
+                    else None,
+                )
 
         pdf_wrapper = spey.get_backend("pyhf")
         control_model = pdf_wrapper(
@@ -325,7 +331,15 @@ class Simplify(spey.ConverterBase):
         # yields needs to be reordered properly before constructing the simplified likelihood
         signal_yields = []
         for channel_name in stat_model_pyhf.config.channels:
-            signal_yields += signal_patch_map[channel_name]["data"]
+            try:
+                signal_yields += signal_patch_map[channel_name]["data"]
+            except KeyError:
+                log.warning(
+                    f"Channel `{channel_name}` does not exist in the signal patch,"
+                    " yields will be set to zero."
+                )
+                signal_yields += [0.0] * bin_map[channel_name]
+
         # NOTE background yields are first moments in simplified framework not the yield values
         # in the full statistical model!
         background_yields = np.mean(samples, axis=0)
