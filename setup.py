@@ -30,6 +30,10 @@ setup(
     url="https://github.com/SpeysideHEP/spey-pyhf",
     project_urls={
         "Bug Tracker": "https://github.com/SpeysideHEP/spey-pyhf/issues",
+        "Documentation": "https://spey-pyhf.readthedocs.io",
+        "Repository": "https://github.com/SpeysideHEP/spey-pyhf",
+        "Homepage": "https://github.com/SpeysideHEP/spey-pyhf",
+        "Download": f"https://github.com/SpeysideHEP/spey-pyhf/archive/refs/tags/v{version}.tar.gz",
     },
     download_url=f"https://github.com/SpeysideHEP/spey-pyhf/archive/refs/tags/v{version}.tar.gz",
     author="Jack Y. Araz",
