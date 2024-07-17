@@ -19,6 +19,8 @@ def __dir__():
     return []
 
 
+# pylint: disable=W1203
+
 log = logging.getLogger("Spey")
 
 
@@ -182,7 +184,7 @@ class Simplify(spey.ConverterBase):
         bin_map = interpreter.bin_map
 
         # configure signal patch map with respect to channel names
-        signal_patch_map = interpreter.patch_to_map(signal_patch)
+        signal_patch_map, signal_modifiers_map = interpreter.patch_to_map(signal_patch)
 
         # Prepare a JSON patch to separate control and validation regions
         # These regions are generally marked as CR and VR
@@ -195,11 +197,11 @@ class Simplify(spey.ConverterBase):
             )
 
         for channel in interpreter.get_channels(control_region_indices):
-            if channel in signal_patch_map:
+            if channel in signal_patch_map and channel in signal_modifiers_map:
                 interpreter.inject_signal(
                     channel,
                     [0.0] * bin_map[channel],
-                    signal_patch_map[channel]["modifiers"]
+                    signal_modifiers_map[channel]
                     if include_modifiers_in_control_model
                     else None,
                 )
