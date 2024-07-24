@@ -2,6 +2,7 @@
 import copy
 import logging
 import warnings
+from contextlib import contextmanager
 from typing import Callable, List, Literal, Optional, Text, Union
 
 import numpy as np
@@ -19,7 +20,7 @@ def __dir__():
     return []
 
 
-# pylint: disable=W1203
+# pylint: disable=W1203, R0903
 
 log = logging.getLogger("Spey")
 
@@ -45,6 +46,22 @@ def make_constraint(index: int, value: float) -> Callable[[np.ndarray], float]:
         return vector[index] - value
 
     return func
+
+
+@contextmanager
+def _disable_logging(highest_level: int = logging.CRITICAL):
+    """
+    Temporary disable logging implementation, this should move into Spey
+
+    Args:
+        highest_level (``int``, default ``logging.CRITICAL``): highest level to be set in logging
+    """
+    previous_level = logging.root.manager.disable
+    logging.disable(highest_level)
+    try:
+        yield
+    finally:
+        logging.disable(previous_level)
 
 
 class Simplify(spey.ConverterBase):
@@ -207,9 +224,10 @@ class Simplify(spey.ConverterBase):
                 )
 
         pdf_wrapper = spey.get_backend("pyhf")
-        control_model = pdf_wrapper(
-            background_only_model=bkgonly_model, signal_patch=interpreter.make_patch()
-        )
+        with _disable_logging():
+            control_model = pdf_wrapper(
+                background_only_model=bkgonly_model, signal_patch=interpreter.make_patch()
+            )
 
         # Extract the nuisance parameters that maximises the likelihood at mu=0
         fit_opts = control_model.prepare_for_fit(expected=expected)
