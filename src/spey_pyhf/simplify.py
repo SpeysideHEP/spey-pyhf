@@ -234,7 +234,6 @@ class Simplify(spey.ConverterBase):
         _, fit_param = fit(
             **fit_opts,
             initial_parameters=None,
-            bounds=None,
             fixed_poi_value=0.0,
         )
 
@@ -267,6 +266,10 @@ class Simplify(spey.ConverterBase):
         )
         fit_opts = statistical_model.prepare_for_fit(expected=expected)
         suggested_fixed = fit_opts["model_configuration"].suggested_fixed
+        log.debug(
+            "Number of parameters to be fitted during the scan: "
+            f"{fit_opts['model_configuration'].npar - len(fit_param)}"
+        )
 
         samples = []
         warnings_list = []
@@ -316,7 +319,9 @@ class Simplify(spey.ConverterBase):
                             _, new_params = fit(
                                 **current_fit_opts,
                                 initial_parameters=init_params.tolist(),
-                                bounds=None,
+                                bounds=current_fit_opts[
+                                    "model_configuration"
+                                ].suggested_bounds,
                             )
                             warnings_list += w
 
