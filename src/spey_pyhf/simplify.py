@@ -1,7 +1,9 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
 import copy
+import logging
 import warnings
-from typing import Callable, List, Optional, Text, Union, Literal
+from contextlib import contextmanager
+from typing import Callable, List, Literal, Optional, Text, Union
 
 import numpy as np
 import spey
@@ -16,6 +18,11 @@ from ._version import __version__
 
 def __dir__():
     return []
+
+
+# pylint: disable=W1203, R0903
+
+log = logging.getLogger("Spey")
 
 
 class ConversionError(Exception):
@@ -39,6 +46,22 @@ def make_constraint(index: int, value: float) -> Callable[[np.ndarray], float]:
         return vector[index] - value
 
     return func
+
+
+@contextmanager
+def _disable_logging(highest_level: int = logging.CRITICAL):
+    """
+    Temporary disable logging implementation, this should move into Spey
+
+    Args:
+        highest_level (``int``, default ``logging.CRITICAL``): highest level to be set in logging
+    """
+    previous_level = logging.root.manager.disable
+    logging.disable(highest_level)
+    try:
+        yield
+    finally:
+        logging.disable(previous_level)
 
 
 class Simplify(spey.ConverterBase):
@@ -175,9 +198,10 @@ class Simplify(spey.ConverterBase):
         }[fittype]
 
         interpreter = WorkspaceInterpreter(bkgonly_model)
+        bin_map = interpreter.bin_map
 
         # configure signal patch map with respect to channel names
-        signal_patch_map = interpreter.patch_to_map(signal_patch)
+        signal_patch_map, signal_modifiers_map = interpreter.patch_to_map(signal_patch)
 
         # Prepare a JSON patch to separate control and validation regions
         # These regions are generally marked as CR and VR
@@ -190,25 +214,26 @@ class Simplify(spey.ConverterBase):
             )
 
         for channel in interpreter.get_channels(control_region_indices):
-            interpreter.inject_signal(
-                channel,
-                [0.0] * len(signal_patch_map[channel]["data"]),
-                signal_patch_map[channel]["modifiers"]
-                if include_modifiers_in_control_model
-                else None,
-            )
+            if channel in signal_patch_map and channel in signal_modifiers_map:
+                interpreter.inject_signal(
+                    channel,
+                    [0.0] * bin_map[channel],
+                    signal_modifiers_map[channel]
+                    if include_modifiers_in_control_model
+                    else None,
+                )
 
         pdf_wrapper = spey.get_backend("pyhf")
-        control_model = pdf_wrapper(
-            background_only_model=bkgonly_model, signal_patch=interpreter.make_patch()
-        )
+        with _disable_logging():
+            control_model = pdf_wrapper(
+                background_only_model=bkgonly_model, signal_patch=interpreter.make_patch()
+            )
 
         # Extract the nuisance parameters that maximises the likelihood at mu=0
         fit_opts = control_model.prepare_for_fit(expected=expected)
         _, fit_param = fit(
             **fit_opts,
             initial_parameters=None,
-            bounds=None,
             fixed_poi_value=0.0,
         )
 
@@ -241,6 +266,10 @@ class Simplify(spey.ConverterBase):
         )
         fit_opts = statistical_model.prepare_for_fit(expected=expected)
         suggested_fixed = fit_opts["model_configuration"].suggested_fixed
+        log.debug(
+            "Number of parameters to be fitted during the scan: "
+            f"{fit_opts['model_configuration'].npar - len(fit_param)}"
+        )
 
         samples = []
         warnings_list = []
@@ -290,7 +319,9 @@ class Simplify(spey.ConverterBase):
                             _, new_params = fit(
                                 **current_fit_opts,
                                 initial_parameters=init_params.tolist(),
-                                bounds=None,
+                                bounds=current_fit_opts[
+                                    "model_configuration"
+                                ].suggested_bounds,
                             )
                             warnings_list += w
 
@@ -304,13 +335,16 @@ class Simplify(spey.ConverterBase):
                     # Some of the samples can lead to problems while sampling from a poisson distribution.
                     # e.g. poisson requires positive lambda values to sample from. If sample leads to a negative
                     # lambda value continue sampling to avoid that point.
+                    log.debug("Problem with the sample generation")
+                    log.debug(
+                        f"Nuisance parameters: {current_nui_params if new_params is None else new_params}"
+                    )
                     continue
 
         if len(warnings_list) > 0:
-            warnings.warn(
-                message=f"{len(warnings_list)} warning(s) generated during sampling."
-                " This might be due to edge cases in nuisance parameter sampling.",
-                category=RuntimeWarning,
+            log.warning(
+                f"{len(warnings_list)} warning(s) generated during sampling."
+                " This might be due to edge cases in nuisance parameter sampling."
             )
 
         samples = np.vstack(samples)
@@ -325,7 +359,15 @@ class Simplify(spey.ConverterBase):
         # yields needs to be reordered properly before constructing the simplified likelihood
         signal_yields = []
         for channel_name in stat_model_pyhf.config.channels:
-            signal_yields += signal_patch_map[channel_name]["data"]
+            try:
+                signal_yields += signal_patch_map[channel_name]
+            except KeyError:
+                log.warning(
+                    f"Channel `{channel_name}` does not exist in the signal patch,"
+                    " yields will be set to zero."
+                )
+                signal_yields += [0.0] * bin_map[channel_name]
+
         # NOTE background yields are first moments in simplified framework not the yield values
         # in the full statistical model!
         background_yields = np.mean(samples, axis=0)

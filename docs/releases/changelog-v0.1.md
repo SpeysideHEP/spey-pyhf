@@ -24,6 +24,9 @@
 * Improve undefined channel handling in the patchset
   ([#12](https://github.com/SpeysideHEP/spey-pyhf/pull/12))
 
+* Improve undefined channel handling in the patchset for full likelihood simplification.
+  ([#13](https://github.com/SpeysideHEP/spey-pyhf/pull/13))
+
 ## Bug fixes
 
 * Bugfix in `simplify` module, where signal injector was not initiated properly.
