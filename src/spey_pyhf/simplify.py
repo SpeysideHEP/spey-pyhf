@@ -355,7 +355,7 @@ class Simplify(spey.ConverterBase):
         signal_yields = []
         for channel_name in stat_model_pyhf.config.channels:
             try:
-                signal_yields += signal_patch_map[channel_name]["data"]
+                signal_yields += signal_patch_map[channel_name]
             except KeyError:
                 log.warning(
                     f"Channel `{channel_name}` does not exist in the signal patch,"
