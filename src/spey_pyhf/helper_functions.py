@@ -170,6 +170,7 @@ class WorkspaceInterpreter:
         Args:
             channel (``Text``): channel name
             data (``List[float]``): signal yields
+            modifiers (``List[Dict]``): uncertainties. If None, default modifiers will be added.
 
         Raises:
             ``ValueError``: If channel does not exist or number of yields does not match
@@ -186,9 +187,20 @@ class WorkspaceInterpreter:
                 f"{self.bin_map[channel]} expected, {len(data)} received."
             )
 
+        default_modifiers = _default_modifiers(self.poi_name[0][1])
+        if modifiers is not None:
+            for mod in default_modifiers:
+                if mod not in modifiers:
+                    log.warning(
+                        f"Modifier `{mod['name']}` with type `{mod['type']}` is missing"
+                        f" from the input. Adding `{mod['name']}`"
+                    )
+                    log.debug(f"Adding modifier: {mod}")
+                    modifiers.append(mod)
+
         self._signal_dict[channel] = data
         self._signal_modifiers[channel] = (
-            _default_modifiers(self.poi_name[0][1]) if modifiers is None else modifiers
+            default_modifiers if modifiers is None else modifiers
         )
 
     @property
