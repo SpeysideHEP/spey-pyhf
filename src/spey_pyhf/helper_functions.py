@@ -9,6 +9,8 @@ def __dir__():
     return __all__
 
 
+# pylint: disable=W1203, W1201, C0103
+
 log = logging.getLogger("Spey")
 
 
@@ -168,6 +170,7 @@ class WorkspaceInterpreter:
         Args:
             channel (``Text``): channel name
             data (``List[float]``): signal yields
+            modifiers (``List[Dict]``): uncertainties. If None, default modifiers will be added.
 
         Raises:
             ``ValueError``: If channel does not exist or number of yields does not match
@@ -184,9 +187,20 @@ class WorkspaceInterpreter:
                 f"{self.bin_map[channel]} expected, {len(data)} received."
             )
 
+        default_modifiers = _default_modifiers(self.poi_name[0][1])
+        if modifiers is not None:
+            for mod in default_modifiers:
+                if mod not in modifiers:
+                    log.warning(
+                        f"Modifier `{mod['name']}` with type `{mod['type']}` is missing"
+                        f" from the input. Adding `{mod['name']}`"
+                    )
+                    log.debug(f"Adding modifier: {mod}")
+                    modifiers.append(mod)
+
         self._signal_dict[channel] = data
         self._signal_modifiers[channel] = (
-            _default_modifiers(self.poi_name[0][1]) if modifiers is None else modifiers
+            default_modifiers if modifiers is None else modifiers
         )
 
     @property
@@ -237,7 +251,7 @@ class WorkspaceInterpreter:
 
     def add_patch(self, signal_patch: List[Dict]) -> None:
         """Inject signal patch"""
-        self._signal_dict, self._to_remove = self.patch_to_map(
+        self._signal_dict, self._signal_modifiers, self._to_remove = self.patch_to_map(
             signal_patch=signal_patch, return_remove_list=True
         )
 
@@ -272,7 +286,10 @@ class WorkspaceInterpreter:
 
     def patch_to_map(
         self, signal_patch: List[Dict], return_remove_list: bool = False
-    ) -> Union[Tuple[Dict[Text, Dict], List[Text]], Dict[Text, Dict]]:
+    ) -> Union[
+        Tuple[Dict[Text, Dict], Dict[Text, Dict], List[Text]],
+        Tuple[Dict[Text, Dict], Dict[Text, Dict]],
+    ]:
         """
         Convert JSONPatch into signal map
 
@@ -288,23 +305,20 @@ class WorkspaceInterpreter:
                 .. versionadded:: 0.1.5
 
         Returns:
-            ``Tuple[Dict[Text, Dict], List[Text]]`` or ``Dict[Text, Dict]``:
+            ``Tuple[Dict[Text, Dict], Dict[Text, Dict], List[Text]]`` or ``Tuple[Dict[Text, Dict], Dict[Text, Dict]]``:
             signal map including the data and modifiers and the list of channels to be removed.
         """
-        signal_map = {}
-        to_remove = []
+        signal_map, modifier_map, to_remove = {}, {}, []
         for item in signal_patch:
             path = int(item["path"].split("/")[2])
             channel_name = self["channels"][path]["name"]
             if item["op"] == "add":
-                signal_map[channel_name] = {
-                    "data": item["value"]["data"],
-                    "modifiers": item["value"].get(
-                        "modifiers", _default_modifiers(poi_name=self.poi_name[0][1])
-                    ),
-                }
+                signal_map[channel_name] = item["value"]["data"]
+                modifier_map[channel_name] = item["value"].get(
+                    "modifiers", _default_modifiers(poi_name=self.poi_name[0][1])
+                )
             elif item["op"] == "remove":
                 to_remove.append(channel_name)
         if return_remove_list:
-            return signal_map, to_remove
-        return signal_map
+            return signal_map, modifier_map, to_remove
+        return signal_map, modifier_map
