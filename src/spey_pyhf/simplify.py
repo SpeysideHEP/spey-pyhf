@@ -259,7 +259,23 @@ class Simplify(spey.ConverterBase):
         )
 
         # Retreive pyhf models and compare parameter maps
-        stat_model_pyhf = statistical_model.backend.model()[1]
+        if include_modifiers_in_control_model:
+            stat_model_pyhf = statistical_model.backend.model()[1]
+        else:
+            # Remove the nuisance parameters from the signal patch
+            # Note that even if the signal yields are zero, nuisance parameters
+            # do contribute to the statistical model and some models may be highly
+            # sensitive to the shape and size of the nuisance parameters.
+            with _disable_logging():
+                tmp_interpreter = copy.deepcopy(interpreter)
+                for channel, data in signal_patch_map.items():
+                    tmp_interpreter.inject_signal(channel=channel, data=data)
+                tmp_model = spey.get_backend("pyhf")(
+                    background_only_model=bkgonly_model,
+                    signal_patch=tmp_interpreter.make_patch(),
+                )
+                stat_model_pyhf = tmp_model.backend.model()[1]
+                del tmp_model, tmp_interpreter
         control_model_pyhf = control_model.backend.model()[1]
         is_nuisance_map_different = (
             stat_model_pyhf.config.par_map != control_model_pyhf.config.par_map
@@ -357,16 +373,18 @@ class Simplify(spey.ConverterBase):
 
         # NOTE: model spec might be modified within the pyhf workspace, thus
         # yields needs to be reordered properly before constructing the simplified likelihood
-        signal_yields = []
+        signal_yields, missing_channels = [], []
         for channel_name in stat_model_pyhf.config.channels:
             try:
                 signal_yields += signal_patch_map[channel_name]
             except KeyError:
-                log.warning(
-                    f"Channel `{channel_name}` does not exist in the signal patch,"
-                    " yields will be set to zero."
-                )
+                missing_channels.append(channel_name)
                 signal_yields += [0.0] * bin_map[channel_name]
+        if len(missing_channels) > 0:
+            log.warning(
+                "Following channels are not in the signal patch,"
+                f" will be set to zero: {', '.join(missing_channels)}"
+            )
 
         # NOTE background yields are first moments in simplified framework not the yield values
         # in the full statistical model!
