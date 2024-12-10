@@ -3,13 +3,19 @@ import copy
 import logging
 import warnings
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Callable, List, Literal, Optional, Text, Union
 
 import numpy as np
 import spey
 import tqdm
-from scipy.stats import moment, multivariate_normal
-from spey.backends.default_pdf import CorrelatedBackground, ThirdMomentExpansion
+from scipy.stats import moment, multivariate_normal, norm
+from spey.backends.default_pdf import (
+    CorrelatedBackground,
+    EffectiveSigma,
+    ThirdMomentExpansion,
+)
+from spey.helper_functions import covariance_to_correlation
 from spey.optimizer.core import fit
 
 from . import WorkspaceInterpreter
@@ -78,7 +84,8 @@ class Simplify(spey.ConverterBase):
         fittype (``Text``, default ``"postfit"``): what type of fitting should be performed ``"postfit"``
             or ``"prefit"``.
         convert_to (``Text``, default ``"default_pdf.correlated_background"``): conversion type. Should
-            be either ``"default_pdf.correlated_background"`` or ``"default_pdf.third_moment_expansion"``.
+            be either ``"default_pdf.correlated_background"``, ``"default_pdf.third_moment_expansion"``
+            or ``"default_pdf.effective_sigma"``.
         number_of_samples (``int``, default ``1000``): number of samples to be generated in order to estimate
             contract the uncertainties into a single value.
         control_region_indices (``List[int]`` or ``List[Text]``, default ``None``): indices or names of the control and
@@ -171,13 +178,15 @@ class Simplify(spey.ConverterBase):
         statistical_model: spey.StatisticalModel,
         fittype: Literal["postfit", "prefit"] = "postfit",
         convert_to: Literal[
-            "default_pdf.correlated_background", "default_pdf.third_moment_expansion"
+            "default_pdf.correlated_background",
+            "default_pdf.third_moment_expansion",
+            "default_pdf.effective_sigma",
         ] = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
         control_region_indices: Optional[Union[List[int], List[Text]]] = None,
         include_modifiers_in_control_model: bool = False,
         save_model: Optional[Text] = None,
-    ) -> Union[CorrelatedBackground, ThirdMomentExpansion]:
+    ) -> Union[CorrelatedBackground, ThirdMomentExpansion, EffectiveSigma]:
 
         assert statistical_model.backend_type == "pyhf", (
             "This method is currently only available for `pyhf` full statistical models."
@@ -390,6 +399,13 @@ class Simplify(spey.ConverterBase):
         # in the full statistical model!
         background_yields = np.mean(samples, axis=0)
 
+        save_kwargs = {
+            "covariance_matrix": covariance_matrix,
+            "background_yields": background_yields,
+            "data": data,
+            "channel_order": stat_model_pyhf.config.channels,
+        }
+
         third_moments = []
         if convert_to == "default_pdf.correlated_background":
             backend = CorrelatedBackground(
@@ -400,6 +416,7 @@ class Simplify(spey.ConverterBase):
             )
         elif convert_to == "default_pdf.third_moment_expansion":
             third_moments = moment(samples, moment=3, axis=0)
+            save_kwargs.update({"third_moments": third_moments})
 
             backend = ThirdMomentExpansion(
                 signal_yields=signal_yields,
@@ -408,21 +425,35 @@ class Simplify(spey.ConverterBase):
                 covariance_matrix=covariance_matrix,
                 third_moment=third_moments,
             )
+        elif convert_to == "default_pdf.effective_sigma":
+            q = (1.0 - (norm.cdf(1.0) - norm.cdf(-1.0))) / 2.0
+            absolute_uncertainty_envelops = list(
+                zip(np.quantile(samples, q, axis=0), np.quantile(samples, 1 - q, axis=0))
+            )
+            save_kwargs.update(
+                {"absolute_uncertainty_envelops": absolute_uncertainty_envelops}
+            )
+
+            backend = EffectiveSigma(
+                signal_yields=signal_yields,
+                background_yields=background_yields,
+                data=data,
+                correlation_matrix=covariance_to_correlation(
+                    covariance_matrix=covariance_matrix
+                ),
+                absolute_uncertainty_envelops=absolute_uncertainty_envelops,
+            )
         else:
             raise ConversionError(
                 "Currently available conversion methods are "
-                + "'default_pdf.correlated_background', 'default_pdf.third_moment_expansion'"
+                + "'default_pdf.correlated_background', 'default_pdf.third_moment_expansion',"
+                + " 'default_pdf.effective_sigma'"
             )
 
         if save_model is not None:
-            if save_model.endswith(".npz"):
-                np.savez_compressed(
-                    save_model,
-                    covariance_matrix=covariance_matrix,
-                    background_yields=background_yields,
-                    third_moments=third_moments,
-                    data=data,
-                    channel_order=stat_model_pyhf.config.channels,
-                )
+            save_path = Path(save_model)
+            if save_path.suffix != ".npz":
+                save_path = save_path.with_suffix(".npz")
+            np.savez_compressed(str(save_path), **save_kwargs)
 
         return backend
