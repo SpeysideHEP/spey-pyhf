@@ -7,6 +7,8 @@
   and usage can be found in the online documentation.
   ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
+* Full statistical model mapping to effective sigma model have been implemented.
+
 ## Improvements
 
 * Sampler functionality has been extended to isolate auxiliary data.
