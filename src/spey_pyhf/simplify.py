@@ -426,9 +426,11 @@ class Simplify(spey.ConverterBase):
                 third_moment=third_moments,
             )
         elif convert_to == "default_pdf.effective_sigma":
+            # Get 68% quantiles
             q = (1.0 - (norm.cdf(1.0) - norm.cdf(-1.0))) / 2.0
-            absolute_uncertainty_envelops = list(
-                zip(np.quantile(samples, q, axis=0), np.quantile(samples, 1 - q, axis=0))
+            absolute_uncertainty_envelops = np.stack(
+                [np.quantile(samples, q, axis=0), np.quantile(samples, 1 - q, axis=0)],
+                axis=1,
             )
             save_kwargs.update(
                 {"absolute_uncertainty_envelops": absolute_uncertainty_envelops}
