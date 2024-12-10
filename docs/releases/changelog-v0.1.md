@@ -42,6 +42,9 @@
   [#5](https://github.com/SpeysideHEP/spey-pyhf/issues/5).
   ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
+* Bugfix in uncertainty quantification for full statistical model mapping on effective sigma
+  ([#15](https://github.com/SpeysideHEP/spey-pyhf/pull/15))
+
 ## Contributors
 
 This release contains contributions from (in alphabetical order):
