@@ -8,6 +8,7 @@
   ([#2](https://github.com/SpeysideHEP/spey-pyhf/pull/2))
 
 * Full statistical model mapping to effective sigma model have been implemented.
+  ([#14](https://github.com/SpeysideHEP/spey-pyhf/pull/14))
 
 ## Improvements
 
