@@ -229,14 +229,14 @@ class WorkspaceInterpreter:
         patch = []
         to_remove = []
         for ich, channel in enumerate(self.channels):
-            if channel in self._signal_dict:
+            if channel in self._to_remove:
+                to_remove.append(remove_from_json(ich))
+            elif channel in self._signal_dict:
                 patch.append(
                     add_to_json(
                         ich, self._signal_dict[channel], self._signal_modifiers[channel]
                     )
                 )
-            elif channel in self._to_remove:
-                to_remove.append(remove_from_json(ich))
             else:
                 log.warning(f"Undefined channel in the patch set: {channel}")
 
