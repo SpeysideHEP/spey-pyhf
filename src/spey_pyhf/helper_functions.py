@@ -1,6 +1,6 @@
 """Helper function for creating and interpreting pyhf inputs"""
 import logging
-from typing import Dict, Generator, List, Optional, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 __all__ = ["WorkspaceInterpreter"]
 
@@ -83,7 +83,7 @@ class WorkspaceInterpreter:
         return self.background_only_model[item]
 
     @property
-    def channels(self) -> Generator[List[str]]:
+    def channels(self) -> Iterator[List[str]]:
         """Retreive channel names as iterator"""
         return (ch["name"] for ch in self["channels"])
 
