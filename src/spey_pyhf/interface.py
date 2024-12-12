@@ -67,15 +67,15 @@ class PyhfInterface(BackendBase):
           and ``data`` are in ``JSON`` format.
     """
 
-    name: Text = "pyhf.base"
+    name: str = "pyhf.base"
     """Name of the backend"""
-    version: Text = __version__
+    version: str = __version__
     """Version of the backend"""
-    author: Text = "SpeysideHEP"
+    author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = ">=0.1.9,<0.2.0"
+    spey_requires: str = ">=0.1.9,<0.2.0"
     """Spey version required for the backend"""
-    doi: List[Text] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
+    doi: List[str] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""
 
     __slots__ = ["_model", "manager"]
@@ -309,15 +309,15 @@ class UncorrelatedBackground(PyhfInterface):
         absolute_uncertainties (``List[float]``): absolute uncertainties on the background
     """
 
-    name: Text = "pyhf.uncorrelated_background"
+    name: str = "pyhf.uncorrelated_background"
     """Name of the backend"""
-    version: Text = __version__
+    version: str = __version__
     """Version of the backend"""
-    author: Text = "SpeysideHEP"
+    author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = PyhfInterface.spey_requires
+    spey_requires: str = PyhfInterface.spey_requires
     """Spey version required for the backend"""
-    doi: List[Text] = PyhfInterface.doi
+    doi: List[str] = PyhfInterface.doi
     """Citable DOI for the backend"""
 
     def __init__(
@@ -396,21 +396,21 @@ class FullStatisticalModel(PyhfInterface):
         >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
     """
 
-    name: Text = "pyhf"
+    name: str = "pyhf"
     """Name of the backend"""
-    version: Text = __version__
+    version: str = __version__
     """Version of the backend"""
-    author: Text = "SpeysideHEP"
+    author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = PyhfInterface.spey_requires
+    spey_requires: str = PyhfInterface.spey_requires
     """Spey version required for the backend"""
-    doi: List[Text] = PyhfInterface.doi
+    doi: List[str] = PyhfInterface.doi
     """Citable DOI for the backend"""
 
     def __init__(
         self,
         signal_patch: Dict,
-        background_only_model: Union[Text, Dict],
+        background_only_model: Union[str, Dict],
     ):
         super().__init__()
         self._model = FullStatisticalModelData(signal_patch, background_only_model)

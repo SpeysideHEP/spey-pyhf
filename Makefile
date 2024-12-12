@@ -31,8 +31,3 @@ testpypi:
 .PHONY: pypi
 pypi:
 	twine --repository spey-pyhf upload dist/*
-
-
-
-
-

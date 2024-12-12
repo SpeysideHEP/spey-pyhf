@@ -164,13 +164,13 @@ class Simplify(spey.ConverterBase):
         >>> # "default_pdf.correlated_background"
     """
 
-    name: Text = "pyhf.simplify"
+    name: str = "pyhf.simplify"
     """Name of the backend"""
-    version: Text = __version__
+    version: str = __version__
     """Version of the backend"""
-    author: Text = "SpeysideHEP"
+    author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: Text = ">=0.1.5,<0.2.0"
+    spey_requires: str = ">=0.1.5,<0.2.0"
     """Spey version required for the backend"""
 
     def __call__(
@@ -183,9 +183,9 @@ class Simplify(spey.ConverterBase):
             "default_pdf.effective_sigma",
         ] = "default_pdf.correlated_background",
         number_of_samples: int = 1000,
-        control_region_indices: Optional[Union[List[int], List[Text]]] = None,
+        control_region_indices: Optional[Union[List[int], List[str]]] = None,
         include_modifiers_in_control_model: bool = False,
-        save_model: Optional[Text] = None,
+        save_model: Optional[str] = None,
     ) -> Union[CorrelatedBackground, ThirdMomentExpansion, EffectiveSigma]:
 
         assert statistical_model.backend_type == "pyhf", (

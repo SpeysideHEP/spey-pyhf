@@ -17,7 +17,8 @@ repos:
     rev: v3.3.1
     hooks:
       - id: pyupgrade
-        args: [--py310-plus]
+        args: [--py38-plus]
+        language_version: python3.8
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -30,5 +31,5 @@ repos:
     rev: 22.6.0
     hooks:
       - id: black
-        args: [--line-length=90]
-        language_version: python3.10
+        args: ["--line-length=90", "--target-version=py38"]
+        language_version: python3.8
