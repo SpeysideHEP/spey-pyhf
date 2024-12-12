@@ -16,7 +16,7 @@ from pkg_resources import get_distribution
 sys.path.insert(0, str(Path("./ext").resolve()))
 
 project = "spey-pyhf"
-copyright = "2023, Jack Y. Araz"
+copyright = "2024, Jack Y. Araz"
 author = "Jack Y. Araz"
 release = get_distribution("spey_pyhf").version
 version = ".".join(release.split(".")[:3])
@@ -137,8 +137,12 @@ html_theme_options = {
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
-html_logo = "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
-html_favicon = "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
+html_logo = (
+    "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
+)
+html_favicon = (
+    "https://raw.githubusercontent.com/SpeysideHEP/spey/main/docs/img/spey-plug-in.png"
+)
 logo_only = True
 
 # Output file base name for HTML help builder.
