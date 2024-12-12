@@ -3,7 +3,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Optional, Text, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 from spey import ExpectationType
@@ -184,13 +184,13 @@ class FullStatisticalModelData(Base):
     """
 
     signal_patch: List[Dict]
-    background_only_model: Union[Dict, Text]
+    background_only_model: Union[Dict, str]
 
     def __post_init__(self):
         if isinstance(self.background_only_model, str):
             if not os.path.isfile(self.background_only_model):
                 raise FileNotFoundError(f"Can not find {self.background_only_model}")
-            with open(self.background_only_model, "r", encoding="uft-8") as f:
+            with open(self.background_only_model, encoding="uft-8") as f:
                 self.background_only_model = json.load(f)
 
         interpreter = WorkspaceInterpreter(self.background_only_model)
@@ -245,12 +245,12 @@ class FullStatisticalModelData(Base):
         }
 
     @property
-    def channels(self) -> Iterator[Text]:
+    def channels(self) -> Iterator[str]:
         """Return channel names"""
         return (ch["name"] for ch in self.background_only_model["channels"])
 
     @property
-    def channel_properties(self) -> Iterator[Tuple[int, Text, int]]:
+    def channel_properties(self) -> Iterator[Tuple[int, str, int]]:
         """Returns an iterator for channel index, name and number of bins"""
         for idx, channel in enumerate(self.channels):
             yield idx, channel, self.workspace.channel_nbins[channel]

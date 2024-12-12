@@ -20,7 +20,7 @@ Installation
 Python >=3.8 is required. This will also automatically install ``pyhf`` since it is a requirement.
 For Gradient and Hessian implementations in likelihood optimisation, we recommend also installing ``Jax``.
 
-Once this package is installed, ``spey`` can automatically detect it, which can be tested using 
+Once this package is installed, ``spey`` can automatically detect it, which can be tested using
 :func:`~spey.AvailableBackends` function;
 
 .. code-block:: python3
@@ -99,7 +99,7 @@ descriptions within ``spey``;
 
     >>> statistical_model.exclusion_confidence_level() # [0.9474850259721279]
 
-For the rest of the functionalities, please refer to the ``spey`` documentation, which can be found 
+For the rest of the functionalities, please refer to the ``spey`` documentation, which can be found
 `in this link <https://speysidehep.github.io/spey/>`_. Due to Spey's fully
 backend agnostic structure, all the functionalities of the :class:`~spey.StatisticalModel` class also
 applies to ``pyhf`` plug-in.
@@ -109,13 +109,13 @@ applies to ``pyhf`` plug-in.
  * ``background_only_model``: This background-only model dictionary includes information about
    background yields, uncertainties and observations. Details on constructing these dictionaries can be
    found in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.7.2/likelihood.html>`_.
- * ``signal_patch``: This signal patch includes dictionaries describing which regions will be added or 
+ * ``signal_patch``: This signal patch includes dictionaries describing which regions will be added or
    removed from the statistical model.
  * ``analysis`` (optional): Unique identifier for the analysis.
  * ``xsection`` (optional): Cross-section value for the signal hypothesis. Units determined by the user.
 
 
-Additionally, this plug-in is shipped with simple uncorrelated background-attachment which accesses 
+Additionally, this plug-in is shipped with simple uncorrelated background-attachment which accesses
 ``pyhf``'s ``uncorrelated_backgound`` function can be accessed through spey with the following function
 
 .. code-block:: python3
@@ -152,7 +152,7 @@ Additionally, this plug-in is shipped with simple uncorrelated background-attach
 
 .. note::
 
-    ``pyhf`` offers an interface to combine the likelihoods that are described as JSON serialised 
+    ``pyhf`` offers an interface to combine the likelihoods that are described as JSON serialised
     files. This has been exploited in ``spey`` interface via :func:`combine` `function <https://speysidehep.github.io/spey/api.html#spey.StatisticalModel.combine>`_.
     This function combines ``pyhf`` workspaces and adjusts the signal structure accordingly. For more information
     about how ``pyhf`` handles the workspace combination `see the dedicated tutorial here <https://pyhf.github.io/pyhf-tutorial/Combinations.html>`_.

@@ -9,7 +9,7 @@ body:
       value: |
         ## Before posting a feature request
         Search existing [GitHub issues](https://github.com/SpeysideHEP/spey-pyhf/issues) to make sure the issue does not already exist.
-        
+
         * **Please use [Markdown syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).**
   - type: textarea
     id: system
@@ -49,4 +49,3 @@ body:
       label: Additional information
       description: |
         Add any other context about the problem here.
-

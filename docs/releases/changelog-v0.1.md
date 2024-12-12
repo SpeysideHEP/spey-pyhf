@@ -45,6 +45,9 @@
 * Bugfix in uncertainty quantification for full statistical model mapping on effective sigma
   ([#15](https://github.com/SpeysideHEP/spey-pyhf/pull/15))
 
+* Issue with implementing removed channels to the patch
+  ([#16](https://github.com/SpeysideHEP/spey-pyhf/pull/16))
+
 ## Contributors
 
 This release contains contributions from (in alphabetical order):

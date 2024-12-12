@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
-with open("README.md", mode="r", encoding="utf-8") as f:
+with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-with open("src/spey_pyhf/_version.py", mode="r", encoding="UTF-8") as f:
+with open("src/spey_pyhf/_version.py", encoding="UTF-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
 
 requirements = ["pyhf==0.7.6", "spey>=0.1.9"]

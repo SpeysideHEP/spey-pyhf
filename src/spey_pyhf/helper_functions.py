@@ -1,6 +1,6 @@
 """Helper function for creating and interpreting pyhf inputs"""
 import logging
-from typing import Dict, Iterator, List, Optional, Text, Tuple, Union
+from typing import Dict, Generator, List, Optional, Tuple, Union
 
 __all__ = ["WorkspaceInterpreter"]
 
@@ -14,7 +14,7 @@ def __dir__():
 log = logging.getLogger("Spey")
 
 
-def remove_from_json(idx: int) -> Dict[Text, Text]:
+def remove_from_json(idx: int) -> Dict[str, str]:
     """
     Remove channel from the json file
 
@@ -48,7 +48,7 @@ def add_to_json(idx: int, yields: List[float], modifiers: List[Dict]) -> Dict:
     }
 
 
-def _default_modifiers(poi_name: Text) -> List[Dict]:
+def _default_modifiers(poi_name: str) -> List[Dict]:
     """Retreive default modifiers"""
     return [
         {"data": None, "name": "lumi", "type": "lumi"},
@@ -83,22 +83,22 @@ class WorkspaceInterpreter:
         return self.background_only_model[item]
 
     @property
-    def channels(self) -> Iterator[List[Text]]:
+    def channels(self) -> Generator[List[str]]:
         """Retreive channel names as iterator"""
         return (ch["name"] for ch in self["channels"])
 
     @property
-    def poi_name(self) -> Dict[Text, Text]:
+    def poi_name(self) -> Dict[str, str]:
         """Retreive poi name per measurement"""
         return [(mes["name"], mes["config"]["poi"]) for mes in self["measurements"]]
 
     @property
-    def bin_map(self) -> Dict[Text, int]:
+    def bin_map(self) -> Dict[str, int]:
         """Get number of bins per channel"""
         return {ch["name"]: len(ch["samples"][0]["data"]) for ch in self["channels"]}
 
     @property
-    def expected_background_yields(self) -> Dict[Text, List[float]]:
+    def expected_background_yields(self) -> Dict[str, List[float]]:
         """Retreive expected background yields with respect to signal injection"""
         yields = {}
         undefined_channels = []
@@ -126,7 +126,7 @@ class WorkspaceInterpreter:
             )
         return yields
 
-    def guess_channel_type(self, channel_name: Text) -> Text:
+    def guess_channel_type(self, channel_name: str) -> str:
         """Guess the type of the channel as CR VR or SR"""
         if channel_name not in self.channels:
             raise ValueError(f"Unknown channel: {channel_name}")
@@ -136,7 +136,7 @@ class WorkspaceInterpreter:
 
         return "__unknown__"
 
-    def guess_CRVR(self) -> List[Text]:
+    def guess_CRVR(self) -> List[str]:
         """Retreive control and validation channel names by guess"""
         return [
             name
@@ -144,7 +144,7 @@ class WorkspaceInterpreter:
             if self.guess_channel_type(name) in ["CR", "VR"]
         ]
 
-    def get_channels(self, channel_index: Union[List[int], List[Text]]) -> List[Text]:
+    def get_channels(self, channel_index: Union[List[int], List[str]]) -> List[str]:
         """
         Retreive channel names with respect to their index
 
@@ -162,7 +162,7 @@ class WorkspaceInterpreter:
         ]
 
     def inject_signal(
-        self, channel: Text, data: List[float], modifiers: Optional[List[Dict]] = None
+        self, channel: str, data: List[float], modifiers: Optional[List[Dict]] = None
     ) -> None:
         """
         Inject signal to the model
@@ -204,7 +204,7 @@ class WorkspaceInterpreter:
         )
 
     @property
-    def signal_per_channel(self) -> Dict[Text, List[float]]:
+    def signal_per_channel(self) -> Dict[str, List[float]]:
         """Return signal yields in each channel"""
         return self._signal_dict
 
@@ -229,14 +229,14 @@ class WorkspaceInterpreter:
         patch = []
         to_remove = []
         for ich, channel in enumerate(self.channels):
-            if channel in self._signal_dict:
+            if channel in self._to_remove:
+                to_remove.append(remove_from_json(ich))
+            elif channel in self._signal_dict:
                 patch.append(
                     add_to_json(
                         ich, self._signal_dict[channel], self._signal_modifiers[channel]
                     )
                 )
-            elif channel in self._to_remove:
-                to_remove.append(remove_from_json(ich))
             else:
                 log.warning(f"Undefined channel in the patch set: {channel}")
 
@@ -255,7 +255,7 @@ class WorkspaceInterpreter:
             signal_patch=signal_patch, return_remove_list=True
         )
 
-    def remove_channel(self, channel_name: Text) -> None:
+    def remove_channel(self, channel_name: str) -> None:
         """
         Remove channel from the likelihood
 
@@ -275,7 +275,7 @@ class WorkspaceInterpreter:
             )
 
     @property
-    def remove_list(self) -> List[Text]:
+    def remove_list(self) -> List[str]:
         """
         Channels to be removed from the model
 
@@ -287,8 +287,8 @@ class WorkspaceInterpreter:
     def patch_to_map(
         self, signal_patch: List[Dict], return_remove_list: bool = False
     ) -> Union[
-        Tuple[Dict[Text, Dict], Dict[Text, Dict], List[Text]],
-        Tuple[Dict[Text, Dict], Dict[Text, Dict]],
+        Tuple[Dict[str, Dict], Dict[str, Dict], List[str]],
+        Tuple[Dict[str, Dict], Dict[str, Dict]],
     ]:
         """
         Convert JSONPatch into signal map

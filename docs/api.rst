@@ -12,7 +12,7 @@ Managers
 
 .. currentmodule:: spey_pyhf
 
-.. autosummary:: 
+.. autosummary::
     :toctree: _generated/
 
     manager.PyhfManager

@@ -1,7 +1,7 @@
 """Manager for pyhf integration"""
 import importlib
 import logging
-from typing import Callable, List, Text
+from collections.abc import Callable
 
 from spey.system.exceptions import MethodNotAvailable
 
@@ -19,7 +19,7 @@ class PyhfManager:
 
         self.shim = importlib.import_module("pyhf.optimize.common").shim
 
-    def __repr__(self) -> Text:
+    def __repr__(self) -> str:
         return (
             f"pyhfManager(pyhf_backend='{self.backend}',"
             + f" available_backends={self.available_backends})"
@@ -34,7 +34,7 @@ class PyhfManager:
         return self.backend != "numpy"
 
     @property
-    def available_backends(self) -> List[Text]:
+    def available_backends(self) -> list[str]:
         """
         Retreive the names of available backends
 
@@ -47,12 +47,12 @@ class PyhfManager:
         ]
 
     @property
-    def backend(self) -> Text:
+    def backend(self) -> str:
         """Retreive current backend name"""
         return PyhfManager.pyhf.tensorlib.name
 
     @backend.setter
-    def backend(self, backend: Text) -> None:
+    def backend(self, backend: str) -> None:
         """
         Modify pyhf backend.
 
