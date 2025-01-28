@@ -240,7 +240,7 @@ class WorkspaceInterpreter:
             else:
                 log.warning(f"Undefined channel in the patch set: {channel}")
 
-        to_remove.sort(key=lambda p: p["path"].split("/")[-1], reverse=True)
+        to_remove.sort(key=lambda p: int(p["path"].split("/")[-1]), reverse=True)
 
         return patch + to_remove
 
