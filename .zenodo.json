@@ -1,8 +1,8 @@
 {
     "description": "pyhf plug-in for spey package",
     "license": "MIT",
-    "title": "SpeysideHEP/spey-pyhf: v0.1.9",
-    "version": "v0.1.9",
+    "title": "SpeysideHEP/spey-pyhf: v0.1.10",
+    "version": "v0.1.10",
     "upload_type": "software",
     "creators": [
         {
@@ -29,7 +29,7 @@
         },
         {
             "scheme": "url",
-            "identifier": "https://github.com/SpeysideHEP/spey-pyhf/tree/v0.1.9",
+            "identifier": "https://github.com/SpeysideHEP/spey-pyhf/tree/v0.1.10",
             "relation": "isSupplementTo"
         },
         {
