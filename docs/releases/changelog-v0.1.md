@@ -48,6 +48,9 @@
 * Issue with implementing removed channels to the patch
   ([#16](https://github.com/SpeysideHEP/spey-pyhf/pull/16))
 
+* Issue with the sorting of the removed channels.
+  ([#17](https://github.com/SpeysideHEP/spey-pyhf/pull/17))
+
 ## Contributors
 
 This release contains contributions from (in alphabetical order):
