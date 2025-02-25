@@ -170,7 +170,7 @@ class Simplify(spey.ConverterBase):
     """Version of the backend"""
     author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: str = ">=0.1.5,<0.2.0"
+    spey_requires: str = ">=0.2.0,<0.3.0"
     """Spey version required for the backend"""
 
     def __call__(
@@ -340,7 +340,7 @@ class Simplify(spey.ConverterBase):
                             # if the initial value is NaN continue search
                             continue
                         current_fit_opts["constraints"] += constraints
-                        with warnings.catch_warnings(record=True) as w:
+                        with warnings.catch_warnings(record=True) as warnings_list:
                             _, new_params = fit(
                                 **current_fit_opts,
                                 initial_parameters=init_params.tolist(),
@@ -348,7 +348,10 @@ class Simplify(spey.ConverterBase):
                                     "model_configuration"
                                 ].suggested_bounds,
                             )
-                            warnings_list += w
+                            for warning in warnings_list:
+                                log.debug(
+                                    f"{warning.message} (file: {warning.filename}, L:{warning.lineno})"
+                                )
 
                 try:
                     current_sample = statistical_model.backend.get_sampler(
@@ -365,12 +368,6 @@ class Simplify(spey.ConverterBase):
                         f"Nuisance parameters: {current_nui_params if new_params is None else new_params}"
                     )
                     continue
-
-        if len(warnings_list) > 0:
-            log.warning(
-                f"{len(warnings_list)} warning(s) generated during sampling."
-                " This might be due to edge cases in nuisance parameter sampling."
-            )
 
         samples = np.vstack(samples)
 

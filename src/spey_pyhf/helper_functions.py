@@ -2,6 +2,8 @@
 import logging
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
+from spey import log_once
+
 __all__ = ["WorkspaceInterpreter"]
 
 
@@ -114,15 +116,12 @@ class WorkspaceInterpreter:
                 if channel["name"] not in self._signal_dict:
                     undefined_channels.append(channel["name"])
         if len(undefined_channels) > 0:
-            log.warning(
+            log_once(
                 "Some of the channels are not defined in the patch set, "
                 "these channels will be kept in the statistical model. "
-            )
-            log.warning(
-                "If these channels are meant to be removed, please indicate them in the patch set."
-            )
-            log.warning(
-                "Please check the following channel(s): " + ", ".join(undefined_channels)
+                "If these channels are meant to be removed, please indicate them in the patch set. "
+                "Please check the following channel(s): " + ", ".join(undefined_channels),
+                log_type="warning",
             )
         return yields
 

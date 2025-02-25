@@ -16,7 +16,7 @@ from pkg_resources import get_distribution
 sys.path.insert(0, str(Path("./ext").resolve()))
 
 project = "spey-pyhf"
-copyright = "2024, Jack Y. Araz"
+copyright = "2025, Jack Y. Araz"
 author = "Jack Y. Araz"
 release = get_distribution("spey_pyhf").version
 version = ".".join(release.split(".")[:3])
