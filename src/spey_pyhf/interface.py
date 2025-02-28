@@ -2,7 +2,7 @@
 
 import copy
 import warnings
-from typing import Callable, Dict, List, Optional, Text, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from spey.base import ModelConfig
@@ -73,7 +73,7 @@ class PyhfInterface(BackendBase):
     """Version of the backend"""
     author: str = "SpeysideHEP"
     """Author of the backend"""
-    spey_requires: str = ">=0.1.9,<0.2.0"
+    spey_requires: str = ">=0.2.0, <0.3.0"
     """Spey version required for the backend"""
     doi: List[str] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""

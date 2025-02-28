@@ -5,6 +5,8 @@ from collections.abc import Callable
 
 from spey.system.exceptions import MethodNotAvailable
 
+log = logging.getLogger("Spey")
+
 
 class PyhfManager:
     """Manager to unify the usage of pyhf through out the package"""
@@ -12,7 +14,12 @@ class PyhfManager:
     pyhf = importlib.import_module("pyhf")
 
     def __init__(self):
-        PyhfManager.pyhf.set_backend("numpy", precision="64b")
+        if importlib.util.find_spec("jax") is not None:
+            PyhfManager.pyhf.set_backend("jax", precision="64b")
+            log.debug("pyhf backend set to Jax")
+        else:
+            PyhfManager.pyhf.set_backend("numpy", precision="64b")
+            log.debug("pyhf backend set to NumPy")
 
         PyhfManager.pyhf.pdf.log.setLevel(logging.CRITICAL)
         PyhfManager.pyhf.workspace.log.setLevel(logging.CRITICAL)
@@ -61,6 +68,7 @@ class PyhfManager:
         """
         if backend not in self.available_backends:
             raise MethodNotAvailable(f"{backend} backend currently not available.")
+        log.debug(f"setting pyhf backend to {backend}")
         PyhfManager.pyhf.set_backend(backend)
 
     @property
