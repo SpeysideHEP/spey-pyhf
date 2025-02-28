@@ -1,8 +1,7 @@
-import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from spey.system.exceptions import InvalidInput
+from spey.system.exceptions import InvalidInput, warning_tracker
 from spey.utils import ExpectationType
 
 from . import manager
@@ -10,6 +9,7 @@ from . import manager
 __all__ = ["initialise_workspace"]
 
 
+@warning_tracker
 def initialise_workspace(
     signal: Union[List[float], List[Dict]],
     background: Union[Dict, List[float]],
@@ -111,85 +111,79 @@ def initialise_workspace(
 
     workspace, model, data, minimum_poi = None, None, None, -np.inf
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore")
-        if not bkg_from_json:
-            if expected == ExpectationType.apriori:
-                # set data as expected background events
-                background = nb
-            # Create model from uncorrelated region
-            model = manager.pyhf.simplemodels.uncorrelated_background(
-                signal.tolist(), nb.tolist(), delta_nb.tolist()
-            )
-            data = background.tolist() + model.config.auxdata
+    if not bkg_from_json:
+        if expected == ExpectationType.apriori:
+            # set data as expected background events
+            background = nb
+        # Create model from uncorrelated region
+        model = manager.pyhf.simplemodels.uncorrelated_background(
+            signal.tolist(), nb.tolist(), delta_nb.tolist()
+        )
+        data = background.tolist() + model.config.auxdata
 
-            if return_full_data:
-                minimum_poi = (
-                    -np.min(
-                        np.true_divide(nb[signal != 0.0], signal[signal != 0.0])
-                    ).astype(np.float32)
-                    if len(signal[signal != 0.0]) > 0
-                    else -np.inf
+        if return_full_data:
+            minimum_poi = (
+                -np.min(np.true_divide(nb[signal != 0.0], signal[signal != 0.0])).astype(
+                    np.float32
                 )
-
-        else:
-            if expected == ExpectationType.apriori:
-                # set data as expected background events
-                obs = []
-                for channel in background.get("channels", []):
-                    current = []
-                    for ch in channel["samples"]:
-                        if len(current) == 0:
-                            current = [0.0] * len(ch["data"])
-                        current = [cur + dt for cur, dt in zip(current, ch["data"])]
-                    obs.append({"name": channel["name"], "data": current})
-                background["observations"] = obs
-
-            workspace = manager.pyhf.Workspace(background)
-            model = workspace.model(
-                patches=[signal],
-                modifier_settings={
-                    "normsys": {"interpcode": "code4"},
-                    "histosys": {"interpcode": "code4p"},
-                },
+                if len(signal[signal != 0.0]) > 0
+                else -np.inf
             )
 
-            data = workspace.data(model)
+    else:
+        if expected == ExpectationType.apriori:
+            # set data as expected background events
+            obs = []
+            for channel in background.get("channels", []):
+                current = []
+                for ch in channel["samples"]:
+                    if len(current) == 0:
+                        current = [0.0] * len(ch["data"])
+                    current = [cur + dt for cur, dt in zip(current, ch["data"])]
+                obs.append({"name": channel["name"], "data": current})
+            background["observations"] = obs
 
-            if return_full_data and None not in [model, workspace, data]:
-                min_ratio = []
-                for idc, channel in enumerate(background.get("channels", [])):
-                    current_signal = []
-                    for sigch in signal:
-                        if idc == int(sigch["path"].split("/")[2]):
-                            current_signal = np.array(
-                                sigch.get("value", {}).get("data", []), dtype=np.float32
-                            )
-                            break
-                    if len(current_signal) == 0:
-                        continue
-                    current_bkg = []
-                    for ch in channel["samples"]:
-                        if len(current_bkg) == 0:
-                            current_bkg = np.zeros(
-                                shape=(len(ch["data"]),), dtype=np.float32
-                            )
-                        current_bkg += np.array(ch["data"], dtype=np.float32)
-                    min_ratio.append(
-                        np.min(
-                            np.true_divide(
-                                current_bkg[current_signal != 0.0],
-                                current_signal[current_signal != 0.0],
-                            )
+        workspace = manager.pyhf.Workspace(background)
+        model = workspace.model(
+            patches=[signal],
+            modifier_settings={
+                "normsys": {"interpcode": "code4"},
+                "histosys": {"interpcode": "code4p"},
+            },
+        )
+
+        data = workspace.data(model)
+
+        if return_full_data and None not in [model, workspace, data]:
+            min_ratio = []
+            for idc, channel in enumerate(background.get("channels", [])):
+                current_signal = []
+                for sigch in signal:
+                    if idc == int(sigch["path"].split("/")[2]):
+                        current_signal = np.array(
+                            sigch.get("value", {}).get("data", []), dtype=np.float32
                         )
-                        if np.any(current_signal != 0.0)
-                        else np.inf
+                        break
+                if len(current_signal) == 0:
+                    continue
+                current_bkg = []
+                for ch in channel["samples"]:
+                    if len(current_bkg) == 0:
+                        current_bkg = np.zeros(shape=(len(ch["data"]),), dtype=np.float32)
+                    current_bkg += np.array(ch["data"], dtype=np.float32)
+                min_ratio.append(
+                    np.min(
+                        np.true_divide(
+                            current_bkg[current_signal != 0.0],
+                            current_signal[current_signal != 0.0],
+                        )
                     )
-                minimum_poi = (
-                    -np.min(min_ratio).astype(np.float32)
-                    if len(min_ratio) > 0
-                    else -np.inf
+                    if np.any(current_signal != 0.0)
+                    else np.inf
                 )
+            minimum_poi = (
+                -np.min(min_ratio).astype(np.float32) if len(min_ratio) > 0 else -np.inf
+            )
 
     if return_full_data:
         return signal, background, nb, delta_nb, workspace, model, data, minimum_poi

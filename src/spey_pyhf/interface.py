@@ -1,7 +1,7 @@
 """pyhf plugin for spey interface"""
 
 import copy
-import warnings
+import logging
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -15,6 +15,8 @@ from .data import Base, FullStatisticalModelData, SimpleModelData
 from .utils import objective_wrapper
 
 __all__ = ["UncorrelatedBackground", "FullStatisticalModel"]
+
+log = logging.getLogger("Spey")
 
 
 def __dir__():
@@ -457,7 +459,7 @@ class FullStatisticalModel(PyhfInterface):
         other_workspace = copy.deepcopy(other.model.workspace)
 
         if update_measurements:
-            warnings.warn(
+            log.warning(
                 "Measurement names are identical which may create problems during combination."
                 "The measurement name of the other statistical model will be updated. "
                 "However, if this is not the desired action please set ``update_measurements`` to ``False``."

@@ -1,7 +1,6 @@
 """Interface to convert pyhf likelihoods to simplified likelihood framework"""
 import copy
 import logging
-import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, List, Literal, Optional, Union
@@ -17,6 +16,7 @@ from spey.backends.default_pdf import (
 )
 from spey.helper_functions import covariance_to_correlation
 from spey.optimizer.core import fit
+from spey.system.exceptions import warning_tracker
 
 from . import WorkspaceInterpreter
 from ._version import __version__
@@ -173,6 +173,7 @@ class Simplify(spey.ConverterBase):
     spey_requires: str = ">=0.2.0,<0.3.0"
     """Spey version required for the backend"""
 
+    @warning_tracker
     def __call__(
         self,
         statistical_model: spey.StatisticalModel,
@@ -297,7 +298,6 @@ class Simplify(spey.ConverterBase):
         )
 
         samples = []
-        warnings_list = []
         with tqdm.tqdm(
             total=number_of_samples,
             unit="sample",
@@ -340,18 +340,13 @@ class Simplify(spey.ConverterBase):
                             # if the initial value is NaN continue search
                             continue
                         current_fit_opts["constraints"] += constraints
-                        with warnings.catch_warnings(record=True) as warnings_list:
-                            _, new_params = fit(
-                                **current_fit_opts,
-                                initial_parameters=init_params.tolist(),
-                                bounds=current_fit_opts[
-                                    "model_configuration"
-                                ].suggested_bounds,
-                            )
-                            for warning in warnings_list:
-                                log.debug(
-                                    f"{warning.message} (file: {warning.filename}, L:{warning.lineno})"
-                                )
+                        _, new_params = fit(
+                            **current_fit_opts,
+                            initial_parameters=init_params.tolist(),
+                            bounds=current_fit_opts[
+                                "model_configuration"
+                            ].suggested_bounds,
+                        )
 
                 try:
                     current_sample = statistical_model.backend.get_sampler(
