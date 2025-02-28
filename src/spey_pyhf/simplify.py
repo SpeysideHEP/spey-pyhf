@@ -4,7 +4,7 @@ import logging
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, Text, Union
+from typing import Callable, List, Literal, Optional, Union
 
 import numpy as np
 import spey

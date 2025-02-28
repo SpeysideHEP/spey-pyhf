@@ -2,7 +2,7 @@
 
 import copy
 import warnings
-from typing import Callable, Dict, List, Optional, Text, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from spey.base import ModelConfig
