@@ -12,6 +12,8 @@
 [![Documentation Status](https://readthedocs.org/projects/spey-pyhf/badge/?version=main&style=plastic)](https://spey-pyhf.readthedocs.io)
 [![GitHub License](https://img.shields.io/github/license/SpeysideHEP/spey-pyhf?style=plastic)](https://github.com/SpeysideHEP/spey-pyhf/blob/main/LICENSE)
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/spey-pyhf?style=plastic)
+
 ``pyhf`` plugin for spey interface can be found in [PyPi library](https://pypi.org/project/spey-pyhf/) and can be downloaded using
 
 ```bash

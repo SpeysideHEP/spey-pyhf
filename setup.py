@@ -37,7 +37,7 @@ setup(
     },
     download_url=f"https://github.com/SpeysideHEP/spey-pyhf/archive/refs/tags/v{version}.tar.gz",
     author="Jack Y. Araz",
-    author_email=("jack.araz@stonybrook.edu"),
+    author_email=("j.araz@ucl.ac.uk"),
     license="MIT",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
@@ -49,7 +49,7 @@ setup(
         ]
     },
     install_requires=requirements,
-    python_requires=">=3.8, <3.13",
+    python_requires=">=3.8, <3.14",
     classifiers=[
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
@@ -62,6 +62,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     extras_require={
         "dev": ["pytest>=7.1.2", "pytest-cov>=3.0.0", "twine>=3.7.1", "wheel>=0.37.1"],
