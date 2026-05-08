@@ -14,7 +14,7 @@ uninstall:
 
 .PHONY: test
 test:
-	pytest --cov=spey tests/*py #--cov-fail-under 99
+	pytest --cov=spey_pyhf tests/*py #--cov-fail-under 99
 
 .PHONY: build
 build:
