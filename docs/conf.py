@@ -27,6 +27,7 @@ language = "en"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
@@ -38,7 +39,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",
     "sphinx_click.ext",
-    # "nbsphinx",
+    "nbsphinx",
     "sphinx_issues",
     "sphinx_copybutton",
     "sphinx_togglebutton",
@@ -63,11 +64,21 @@ xref_links = {
     "1202.3415": ("[arXiv:1202.3415]", "https://doi.org/10.48550/arXiv.1202.3415"),
 }
 
-# source_suffix = {
-#     ".rst": "restructuredtext",
-#     ".txt": "restructuredtext",
-#     ".md": "markdown",
-# }
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".txt": "restructuredtext",
+    ".md": "markdown",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
+}
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+myst_url_schemes = ("http", "https", "mailto")
 
 bibtex_default_style = "unsrt"
 

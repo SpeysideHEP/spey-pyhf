@@ -12,7 +12,7 @@ authors = [
     {name = "Jack Y. Araz", email = "j.araz@ucl.ac.uk"},
 ]
 requires-python = ">3.8, <3.15"
-dependencies = ["pyhf==0.7.6", "spey>=0.2.1"]
+dependencies = ["pyhf==0.7.6", "spey>=0.2.6"]
 classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
