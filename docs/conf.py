@@ -66,7 +66,7 @@ xref_links = {
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "restructuredtext",
-    ".md": "markdown",
+    ".md": "myst-nb",
     ".ipynb": "myst-nb",
     ".myst": "myst-nb",
 }
