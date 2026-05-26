@@ -13,6 +13,8 @@ Interface
     :show-inheritance:
     :inherited-members:
 
-.. autoclass:: spey_pyhf.simplify.Simplify
-    :members:
-    :undoc-members:
+
+Simplified likelihoods
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: spey_pyhf.simplify
