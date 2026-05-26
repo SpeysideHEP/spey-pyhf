@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spey-pyhf"
+dynamic = ["version"]
+description = "pyhf plugin for spey interface"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "MIT"}
+authors = [
+    {name = "Jack Y. Araz", email = "j.araz@ucl.ac.uk"},
+]
+requires-python = ">3.8, <3.15"
+dependencies = ["pyhf==0.7.6", "spey>=0.2.6"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+Homepage = "https://github.com/SpeysideHEP/spey-pyhf"
+Repository = "https://github.com/SpeysideHEP/spey-pyhf"
+Documentation = "https://spey-pyhf.readthedocs.io"
+"Bug Tracker" = "https://github.com/SpeysideHEP/spey-pyhf/issues"
+Download = "https://github.com/SpeysideHEP/spey-pyhf/releases"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx==6.2.1",
+    "sphinxcontrib-bibtex~=2.1",
+    "sphinx-click",
+    "sphinx_rtd_theme",
+    "nbsphinx!=0.8.8",
+    "sphinx-issues",
+    "sphinx-copybutton>=0.3.2",
+    "sphinx-togglebutton>=0.3.0",
+    "myst-parser",
+    "sphinx-rtd-size",
+]
+dev = [
+    "pytest>=7.1.2",
+    "pytest-cov>=3.0.0",
+    "twine>=3.7.1",
+    "wheel>=0.37.1",
+]
+jax = ["jax>=0.3.35"]
+
+[project.entry-points."spey.backend.plugins"]
+"pyhf.uncorrelated_background" = "spey_pyhf.interface:UncorrelatedBackground"
+"pyhf" = "spey_pyhf.interface:FullStatisticalModel"
+"pyhf.simplify" = "spey_pyhf.simplify:Simplify"
+
+[tool.setuptools.dynamic]
+version = {attr = "spey_pyhf._version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
