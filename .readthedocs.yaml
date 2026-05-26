@@ -15,8 +15,8 @@ build:
 sphinx:
   configuration: docs/conf.py
 
-# If using Sphinx, optionally build your docs in additional formats such as PDF and ePub
-formats: all
+# Only build HTML (no PDF/ePub/HTMLZip)
+formats: []
 
 # python -m pip install .[docs]
 python:

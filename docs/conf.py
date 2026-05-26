@@ -16,7 +16,7 @@ from importlib.metadata import version
 sys.path.insert(0, str(Path("./ext").resolve()))
 
 project = "spey-pyhf"
-copyright = "2025, Jack Y. Araz"
+copyright = "2023-2026, Jack Y. Araz"
 author = "Jack Y. Araz"
 release = version("spey_pyhf")
 version = ".".join(release.split(".")[:3])
@@ -37,7 +37,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
     "sphinxcontrib.bibtex",
-    "sphinx.ext.napoleon",
     "sphinx_click.ext",
     "nbsphinx",
     "sphinx_issues",
@@ -97,11 +96,6 @@ numpydoc_show_class_members = False
 templates_path = ["_templates"]
 exclude_patterns = ["introduction.rst"]
 
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-#
-source_suffix = [".rst"]
-
 # The master toctree document.
 master_doc = "index"
 man_pages = [(master_doc, "spey", "spey Documentation", [author], 1)]
@@ -157,7 +151,7 @@ html_favicon = (
 logo_only = True
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "speydoc"
+htmlhelp_basename = "spey-pyhf-doc"
 
 # sphinx-copybutton configuration
 copybutton_prompt_text = r">>> |\.\.\. |\$ "
