@@ -11,14 +11,14 @@ import sys
 import warnings
 from pathlib import Path
 
-from pkg_resources import get_distribution
+from importlib.metadata import version
 
 sys.path.insert(0, str(Path("./ext").resolve()))
 
 project = "spey-pyhf"
 copyright = "2025, Jack Y. Araz"
 author = "Jack Y. Araz"
-release = get_distribution("spey_pyhf").version
+release = version("spey_pyhf")
 version = ".".join(release.split(".")[:3])
 language = "en"
 
