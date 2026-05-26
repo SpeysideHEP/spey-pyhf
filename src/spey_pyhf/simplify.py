@@ -302,9 +302,8 @@ class Simplify(spey.ConverterBase):
     :math:`\mathcal{L}^{c}`, the multivariate-Gaussian sampling of its
     nuisance parameters and the Monte-Carlo extraction of the first few
     central moments of the per-bin background distribution --- is
-    described in detail at the
-    :doc:`module level <spey_pyhf.simplify>` and follows
-    Buckley *et al.*, JHEP 04 (2019) 064
+    described in detail in the :mod:`spey_pyhf.simplify` module
+    documentation and follows Buckley *et al.*, JHEP 04 (2019) 064
     (`arXiv:1809.05548 <https://arxiv.org/abs/1809.05548>`_). The
     asymmetric variant follows Barlow,
     `arXiv:physics/0406120 <https://arxiv.org/abs/physics/0406120>`_.
