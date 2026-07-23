@@ -73,26 +73,33 @@ def add_to_json(idx: int, yields: List[float], modifiers: List[Dict]) -> Dict:
     }
 
 
-def _default_modifiers(poi_name: str) -> List[Dict]:
+def _default_modifiers(poi_name: str, include_lumi: bool = True) -> List[Dict]:
     """
     Build the default modifier list attached to an injected signal sample.
 
     The default consists of a luminosity modifier and an unconstrained
-    normalisation factor playing the role of the parameter of interest.
+    normalisation factor playing the role of the parameter of interest. The
+    ``lumi`` modifier is only meaningful if the workspace's measurement
+    config already declares a ``lumi`` parameter (with ``auxdata`` and
+    ``sigmas``); otherwise ``pyhf`` fails to build the constraint term for it.
 
     Args:
         poi_name (``str``): name of the parameter of interest declared in the
             measurement configuration.
+        include_lumi (``bool``, default ``True``): whether to include the
+            ``lumi`` modifier. Should be ``False`` when the background-only
+            workspace does not declare a ``lumi`` parameter in its
+            measurement config.
 
     Returns:
         ``List[Dict]``:
-        list of two modifier dictionaries: a ``lumi`` modifier and a
+        list of modifier dictionaries: optionally a ``lumi`` modifier and a
         ``normfactor`` modifier whose name is ``poi_name``.
     """
-    return [
-        {"data": None, "name": "lumi", "type": "lumi"},
-        {"data": None, "name": poi_name, "type": "normfactor"},
-    ]
+    modifiers = [{"data": None, "name": poi_name, "type": "normfactor"}]
+    if include_lumi:
+        modifiers.insert(0, {"data": None, "name": "lumi", "type": "lumi"})
+    return modifiers
 
 
 def _scale_modifier_for_lumi(modifier: Dict, factor: float) -> None:
@@ -216,6 +223,26 @@ class WorkspaceInterpreter:
             ``workspace["channels"]``.
         """
         return (ch["name"] for ch in self["channels"])
+
+    @property
+    def has_lumi_parameter(self) -> bool:
+        """
+        Whether the workspace's measurement config declares a ``lumi`` parameter.
+
+        A ``lumi`` modifier can only be built into a valid ``pyhf`` model if
+        the corresponding measurement declares a ``lumi`` entry (with
+        ``auxdata`` and ``sigmas``) in ``config["parameters"]``. Without it,
+        ``pyhf`` cannot construct the constraint term for the modifier.
+
+        Returns:
+            ``bool``:
+            ``True`` if any measurement declares a ``lumi`` parameter.
+        """
+        return any(
+            param.get("name") == "lumi"
+            for mes in self["measurements"]
+            for param in mes.get("config", {}).get("parameters", [])
+        )
 
     @property
     def poi_name(self) -> List[Tuple[str, str]]:
@@ -374,7 +401,9 @@ class WorkspaceInterpreter:
                 f"{self.bin_map[channel]} expected, {len(data)} received."
             )
 
-        default_modifiers = _default_modifiers(self.poi_name[0][1])
+        default_modifiers = _default_modifiers(
+            self.poi_name[0][1], include_lumi=self.has_lumi_parameter
+        )
         if modifiers is not None:
             for mod in default_modifiers:
                 if mod not in modifiers:
@@ -525,7 +554,10 @@ class WorkspaceInterpreter:
             if item["op"] == "add":
                 signal_map[channel_name] = item["value"]["data"]
                 modifier_map[channel_name] = item["value"].get(
-                    "modifiers", _default_modifiers(poi_name=self.poi_name[0][1])
+                    "modifiers",
+                    _default_modifiers(
+                        poi_name=self.poi_name[0][1], include_lumi=self.has_lumi_parameter
+                    ),
                 )
             elif item["op"] == "remove":
                 to_remove.append(channel_name)
