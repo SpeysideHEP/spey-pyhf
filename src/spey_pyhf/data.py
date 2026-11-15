@@ -176,7 +176,7 @@ class FullStatisticalModelData(Base):
 
     Args:
         signal_patch (``List[Dict]``): Patch data for signal model. please see
-            `this link <https://pyhf.readthedocs.io/en/v0.7.0/likelihood.html>`_ for details on
+            `this link <https://pyhf.readthedocs.io/en/v0.8.0/likelihood.html>`_ for details on
             the structure of the input.
         background_only_model (``Dict`` or ``Text``): This input expects background only data
             that describes the full statistical model for the background. It also accepts ``str``
