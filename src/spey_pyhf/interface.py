@@ -2,7 +2,7 @@
 
 import copy
 import logging
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
 
 import numpy as np
 from spey.base import ModelConfig
@@ -77,7 +77,7 @@ class PyhfInterface(BackendBase):
     """Author of the backend"""
     spey_requires: str = ">=0.2.0,<0.3.0"
     """Spey version required for the backend"""
-    doi: List[str] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
+    doi: list[str] = ["10.5281/zenodo.1169739", "10.21105/joss.02823"]
     """Citable DOI for the backend"""
 
     __slots__ = ["_model", "manager"]
@@ -119,7 +119,7 @@ class PyhfInterface(BackendBase):
             allow_negative_signal=allow_negative_signal, poi_upper_bound=poi_upper_bound
         )
 
-    def expected_data(self, pars: List[float]) -> List[float]:
+    def expected_data(self, pars: list[float]) -> list[float]:
         r"""
         Compute the expected value of the statistical model
 
@@ -136,7 +136,7 @@ class PyhfInterface(BackendBase):
     def get_logpdf_func(
         self,
         expected: ExpectationType = ExpectationType.observed,
-        data: Optional[Union[List[float], np.ndarray]] = None,
+        data: list[float] | np.ndarray | None = None,
     ) -> Callable[[np.ndarray], float]:
         r"""
         Generate function to compute :math:`\log\mathcal{L}(\mu, \theta)` where :math:`\mu` is the
@@ -175,7 +175,7 @@ class PyhfInterface(BackendBase):
     def get_hessian_logpdf_func(
         self,
         expected: ExpectationType = ExpectationType.observed,
-        data: Optional[Union[List[float], np.ndarray]] = None,
+        data: list[float] | np.ndarray | None = None,
     ) -> Callable[[np.ndarray], float]:
         r"""
         Currently Hessian of :math:`\log\mathcal{L}(\mu, \theta)` is only used to compute
@@ -220,9 +220,9 @@ class PyhfInterface(BackendBase):
     def get_objective_function(
         self,
         expected: ExpectationType = ExpectationType.observed,
-        data: Optional[Union[List[float], np.ndarray]] = None,
+        data: list[float] | np.ndarray | None = None,
         do_grad: bool = True,
-    ) -> Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]:
+    ) -> Callable[[np.ndarray], float | tuple[float, np.ndarray]]:
         r"""
         Objective function is the function to perform the optimisation on. This function is
         expected to be twice negative log-likelihood, :math:`-2\log\mathcal{L}(\mu, \theta)`.
@@ -319,15 +319,15 @@ class UncorrelatedBackground(PyhfInterface):
     """Author of the backend"""
     spey_requires: str = PyhfInterface.spey_requires
     """Spey version required for the backend"""
-    doi: List[str] = PyhfInterface.doi
+    doi: list[str] = PyhfInterface.doi
     """Citable DOI for the backend"""
 
     def __init__(
         self,
-        signal_yields: List[float],
-        background_yields: List[float],
-        data: List[int],
-        absolute_uncertainties: List[float],
+        signal_yields: list[float],
+        background_yields: list[float],
+        data: list[int],
+        absolute_uncertainties: list[float],
     ):
         super().__init__()
         self._model = SimpleModelData(
@@ -406,13 +406,13 @@ class FullStatisticalModel(PyhfInterface):
     """Author of the backend"""
     spey_requires: str = PyhfInterface.spey_requires
     """Spey version required for the backend"""
-    doi: List[str] = PyhfInterface.doi
+    doi: list[str] = PyhfInterface.doi
     """Citable DOI for the backend"""
 
     def __init__(
         self,
-        signal_patch: Dict,
-        background_only_model: Union[str, Dict],
+        signal_patch: dict,
+        background_only_model: str | dict,
     ):
         super().__init__()
         self._model = FullStatisticalModelData(signal_patch, background_only_model)

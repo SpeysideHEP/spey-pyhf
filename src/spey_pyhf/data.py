@@ -2,8 +2,8 @@ import copy
 import json
 import os
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 from spey import ExpectationType
@@ -16,7 +16,7 @@ from . import WorkspaceInterpreter, manager
 class Base(ABC):
     """Base class for pyhf data input"""
 
-    def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
+    def __call__(self, expected: ExpectationType = ExpectationType.observed) -> tuple:
         """
         Retreive pyhf workspace
 
@@ -41,7 +41,7 @@ class Base(ABC):
 
     @abstractmethod
     def config(
-        self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
+        self, allow_negative_signal: bool = True, poi_upper_bound: float | None = None
     ) -> ModelConfig:
         r"""
         Model configuration.
@@ -76,10 +76,10 @@ class SimpleModelData(Base):
         absolute_uncertainties (``List[float]``): absolute uncertainties on the background
     """
 
-    signal_yields: List[float]
-    background_yields: List[float]
-    data: List[float]
-    absolute_uncertainties: List[float]
+    signal_yields: list[float]
+    background_yields: list[float]
+    data: list[float]
+    absolute_uncertainties: list[float]
 
     def __post_init__(self):
         assert (
@@ -89,7 +89,7 @@ class SimpleModelData(Base):
             == len(self.absolute_uncertainties)
         ), "Lenght of all input must be the same."
 
-    def __call__(self, expected: ExpectationType = ExpectationType.observed) -> Tuple:
+    def __call__(self, expected: ExpectationType = ExpectationType.observed) -> tuple:
         """
         Retreive pyhf workspace
 
@@ -126,7 +126,7 @@ class SimpleModelData(Base):
         return any(x > 0 for x in self.signal_yields)
 
     def config(
-        self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
+        self, allow_negative_signal: bool = True, poi_upper_bound: float | None = None
     ) -> ModelConfig:
         r"""
         Model configuration.
@@ -183,8 +183,8 @@ class FullStatisticalModelData(Base):
             input which indicates the full path to the background only ``JSON`` file.
     """
 
-    signal_patch: List[Dict]
-    background_only_model: Union[Dict, str]
+    signal_patch: list[dict]
+    background_only_model: dict | str
 
     def __post_init__(self):
         if isinstance(self.background_only_model, str):
@@ -250,7 +250,7 @@ class FullStatisticalModelData(Base):
         return (ch["name"] for ch in self.background_only_model["channels"])
 
     @property
-    def channel_properties(self) -> Iterator[Tuple[int, str, int]]:
+    def channel_properties(self) -> Iterator[tuple[int, str, int]]:
         """Returns an iterator for channel index, name and number of bins"""
         for idx, channel in enumerate(self.channels):
             yield idx, channel, self.workspace.channel_nbins[channel]
@@ -259,7 +259,7 @@ class FullStatisticalModelData(Base):
         self,
         expected: ExpectationType = ExpectationType.observed,
         include_aux: bool = True,
-    ) -> Tuple:
+    ) -> tuple:
         """
         Retreive pyhf workspace
 
@@ -324,7 +324,7 @@ class FullStatisticalModelData(Base):
         return self.workspace, self._model, data
 
     def config(
-        self, allow_negative_signal: bool = True, poi_upper_bound: Optional[float] = None
+        self, allow_negative_signal: bool = True, poi_upper_bound: float | None = None
     ) -> ModelConfig:
         r"""
         Model configuration.
