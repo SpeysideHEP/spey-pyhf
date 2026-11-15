@@ -79,6 +79,9 @@ myst_enable_extensions = [
 ]
 myst_url_schemes = ("http", "https", "mailto")
 
+# Release notes share section names, so make the section labels unique per document
+autosectionlabel_prefix_document = True
+
 bibtex_default_style = "unsrt"
 
 bibtex_bibfiles = ["bib/references.bib"]
