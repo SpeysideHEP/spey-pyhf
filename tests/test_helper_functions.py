@@ -1,4 +1,5 @@
 """Unit tests for :mod:`spey_pyhf.helper_functions`."""
+
 import copy
 
 import pytest

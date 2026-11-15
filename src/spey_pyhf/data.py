@@ -343,9 +343,11 @@ class FullStatisticalModelData(Base):
         bounds = copy.deepcopy(self._config["suggested_bounds"])
         bounds[self._config["poi_index"]] = (
             max(self._minimum_poi, -10.0) if allow_negative_signal else 0.0,
-            bounds[self._config["poi_index"]][1]
-            if not poi_upper_bound
-            else poi_upper_bound,
+            (
+                bounds[self._config["poi_index"]][1]
+                if not poi_upper_bound
+                else poi_upper_bound
+            ),
         )
 
         return ModelConfig(

@@ -515,9 +515,11 @@ class Simplify(spey.ConverterBase):
                 interpreter.inject_signal(
                     channel,
                     [0.0] * bin_map[channel],
-                    signal_modifiers_map[channel]
-                    if include_modifiers_in_control_model
-                    else None,
+                    (
+                        signal_modifiers_map[channel]
+                        if include_modifiers_in_control_model
+                        else None
+                    ),
                 )
 
         pdf_wrapper = spey.get_backend("pyhf")

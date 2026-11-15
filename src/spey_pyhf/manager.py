@@ -1,4 +1,5 @@
 """Manager for pyhf integration"""
+
 import importlib
 import logging
 from collections.abc import Callable
