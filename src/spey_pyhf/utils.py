@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from spey.system.exceptions import InvalidInput, warning_tracker
@@ -11,25 +12,25 @@ __all__ = ["initialise_workspace"]
 
 @warning_tracker
 def initialise_workspace(
-    signal: Union[List[float], List[Dict]],
-    background: Union[Dict, List[float]],
-    nb: Optional[List[float]] = None,
-    delta_nb: Optional[List[float]] = None,
+    signal: list[float] | list[dict],
+    background: dict | list[float],
+    nb: list[float] | None = None,
+    delta_nb: list[float] | None = None,
     expected: ExpectationType = ExpectationType.observed,
     return_full_data: bool = False,
-) -> Union[
+) -> (
     tuple[
-        Union[list, Any],
-        Union[Optional[dict], Any],
-        Optional[Any],
-        Optional[Any],
-        Optional[manager.pyhf.Workspace],
+        list | Any,
+        dict | None | Any,
+        Any | None,
+        Any | None,
+        manager.pyhf.Workspace | None,
         Any,
         Any,
-        Union[Union[int, float, complex], Any],
-    ],
-    tuple[Optional[manager.pyhf.Workspace], Any, Any],
-]:
+        int | float | complex | Any,
+    ]
+    | tuple[manager.pyhf.Workspace | None, Any, Any]
+):
     """
     Construct the statistical model with respect to the given inputs.
 
@@ -193,7 +194,7 @@ def initialise_workspace(
 
 def objective_wrapper(
     data: np.ndarray, pdf: manager.pyhf.pdf, do_grad: bool
-) -> Callable[[np.ndarray], Union[float, Tuple[float, np.ndarray]]]:
+) -> Callable[[np.ndarray], float | tuple[float, np.ndarray]]:
     """
     Prepare objective function and its gradient
 
@@ -223,7 +224,7 @@ def objective_wrapper(
         False,
     )
 
-    def func(pars: np.ndarray) -> Union[np.array, Tuple[np.array, np.array]]:
+    def func(pars: np.ndarray) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         pars = manager.pyhf.tensorlib.astensor(pars)
         if do_grad:
             obj, grad = minimizer_kwargs["func"](pars)
