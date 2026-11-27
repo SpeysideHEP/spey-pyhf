@@ -1,4 +1,4 @@
-# Release notes v0.3
+# Release notes v0.2
 
 ## Important notes
 
