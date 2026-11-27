@@ -220,9 +220,10 @@ References
 
 import copy
 import logging
+from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, Union
+from typing import Literal
 
 import numpy as np
 import spey
@@ -470,10 +471,10 @@ class Simplify(spey.ConverterBase):
             "default.effective_sigma",
         ] = "default.correlated_background",
         number_of_samples: int = 1000,
-        control_region_indices: Optional[Union[List[int], List[str]]] = None,
+        control_region_indices: list[int] | list[str] | None = None,
         include_modifiers_in_control_model: bool = False,
-        save_model: Optional[str] = None,
-    ) -> Union[CorrelatedBackground, ThirdMomentExpansion, EffectiveSigma]:
+        save_model: str | None = None,
+    ) -> CorrelatedBackground | ThirdMomentExpansion | EffectiveSigma:
 
         assert statistical_model.backend_type == "pyhf", (
             "This method is currently only available for `pyhf` full statistical models."
@@ -514,9 +515,11 @@ class Simplify(spey.ConverterBase):
                 interpreter.inject_signal(
                     channel,
                     [0.0] * bin_map[channel],
-                    signal_modifiers_map[channel]
-                    if include_modifiers_in_control_model
-                    else None,
+                    (
+                        signal_modifiers_map[channel]
+                        if include_modifiers_in_control_model
+                        else None
+                    ),
                 )
 
         pdf_wrapper = spey.get_backend("pyhf")

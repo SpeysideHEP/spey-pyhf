@@ -1,4 +1,5 @@
 """Manager for pyhf integration"""
+
 import importlib
 import logging
 from collections.abc import Callable
@@ -49,9 +50,7 @@ class PyhfManager:
             ``List[Text]``:
             list of available backends
         """
-        return [
-            bd for bd in ["numpy", "tensorflow", "jax"] if importlib.util.find_spec(bd)
-        ]
+        return [bd for bd in ["numpy", "jax"] if importlib.util.find_spec(bd)]
 
     @property
     def backend(self) -> str:
@@ -66,10 +65,17 @@ class PyhfManager:
         Args:
             backend (`Text`): backend type. see pyhf for details
         """
-        if backend not in self.available_backends:
-            raise MethodNotAvailable(f"{backend} backend currently not available.")
         log.debug(f"setting pyhf backend to {backend}")
-        PyhfManager.pyhf.set_backend(backend)
+        # Let pyhf decide which backends are supported and importable
+        try:
+            PyhfManager.pyhf.set_backend(backend)
+        except (
+            PyhfManager.pyhf.exceptions.InvalidBackend,
+            PyhfManager.pyhf.exceptions.ImportBackendError,
+        ) as err:
+            raise MethodNotAvailable(
+                f"{backend} backend currently not available."
+            ) from err
 
     @property
     def backend_accessor(self):

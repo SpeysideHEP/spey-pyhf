@@ -13,7 +13,7 @@ rescaling.
 
 import copy
 import logging
-from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
+from collections.abc import Iterator
 
 from spey import log_once
 
@@ -29,14 +29,14 @@ def __dir__():
 log = logging.getLogger("Spey")
 
 
-SYSTEMATIC_MODIFIER_TYPES: FrozenSet[str] = frozenset({"normsys", "histosys", "lumi"})
+SYSTEMATIC_MODIFIER_TYPES: frozenset[str] = frozenset({"normsys", "histosys", "lumi"})
 # Modifier ``type`` values that represent systematic (non-statistical) uncertainties.
 
-STATISTICAL_MODIFIER_TYPES: FrozenSet[str] = frozenset({"staterror", "shapesys"})
+STATISTICAL_MODIFIER_TYPES: frozenset[str] = frozenset({"staterror", "shapesys"})
 # Modifier ``type`` values that represent statistical (Poisson/MC) uncertainties.
 
 
-def remove_from_json(idx: int) -> Dict[str, str]:
+def remove_from_json(idx: int) -> dict[str, str]:
     """
     Build a ``remove`` ``JSONPatch`` operation for a channel.
 
@@ -50,7 +50,7 @@ def remove_from_json(idx: int) -> Dict[str, str]:
     return {"op": "remove", "path": f"/channels/{idx}"}
 
 
-def add_to_json(idx: int, yields: List[float], modifiers: List[Dict]) -> Dict:
+def add_to_json(idx: int, yields: list[float], modifiers: list[dict]) -> dict:
     """
     Build an ``add`` ``JSONPatch`` operation that injects a signal sample.
 
@@ -73,7 +73,7 @@ def add_to_json(idx: int, yields: List[float], modifiers: List[Dict]) -> Dict:
     }
 
 
-def _default_modifiers(poi_name: str, include_lumi: bool = True) -> List[Dict]:
+def _default_modifiers(poi_name: str, include_lumi: bool = True) -> list[dict]:
     """
     Build the default modifier list attached to an injected signal sample.
 
@@ -102,7 +102,7 @@ def _default_modifiers(poi_name: str, include_lumi: bool = True) -> List[Dict]:
     return modifiers
 
 
-def _scale_modifier_for_lumi(modifier: Dict, factor: float) -> None:
+def _scale_modifier_for_lumi(modifier: dict, factor: float) -> None:
     """
     Scale the absolute parts of a modifier in place by a luminosity factor.
 
@@ -134,7 +134,7 @@ def _scale_modifier_for_lumi(modifier: Dict, factor: float) -> None:
 
 
 def _rescale_systematic_modifier(
-    modifier: Dict, fraction: float, nominal: List[float]
+    modifier: dict, fraction: float, nominal: list[float]
 ) -> None:
     """
     Rescale the deviation carried by a systematic modifier in place.
@@ -202,12 +202,12 @@ class WorkspaceInterpreter:
         "_to_remove",
     ]
 
-    def __init__(self, background_only_model: Dict):
+    def __init__(self, background_only_model: dict):
         self.background_only_model = background_only_model
         """``pyhf`` workspace description for the background-only fit."""
-        self._signal_dict: Dict[str, List[float]] = {}
-        self._signal_modifiers: Dict[str, List[Dict]] = {}
-        self._to_remove: List[str] = []
+        self._signal_dict: dict[str, list[float]] = {}
+        self._signal_modifiers: dict[str, list[dict]] = {}
+        self._to_remove: list[str] = []
 
     def __getitem__(self, item):
         return self.background_only_model[item]
@@ -245,7 +245,7 @@ class WorkspaceInterpreter:
         )
 
     @property
-    def poi_name(self) -> List[Tuple[str, str]]:
+    def poi_name(self) -> list[tuple[str, str]]:
         """
         Parameter-of-interest name for each measurement.
 
@@ -257,7 +257,7 @@ class WorkspaceInterpreter:
         return [(mes["name"], mes["config"]["poi"]) for mes in self["measurements"]]
 
     @property
-    def bin_map(self) -> Dict[str, int]:
+    def bin_map(self) -> dict[str, int]:
         """
         Number of bins for every channel declared in the workspace.
 
@@ -268,7 +268,7 @@ class WorkspaceInterpreter:
         return {ch["name"]: len(ch["samples"][0]["data"]) for ch in self["channels"]}
 
     @property
-    def expected_background_yields(self) -> Dict[str, List[float]]:
+    def expected_background_yields(self) -> dict[str, list[float]]:
         """
         Total expected background yields per channel, given the current configuration.
 
@@ -333,7 +333,7 @@ class WorkspaceInterpreter:
 
         return "__unknown__"
 
-    def guess_CRVR(self) -> List[str]:
+    def guess_CRVR(self) -> list[str]:
         """
         Return all channel names that look like control or validation regions.
 
@@ -349,7 +349,7 @@ class WorkspaceInterpreter:
             if self.guess_channel_type(name) in ["CR", "VR"]
         ]
 
-    def get_channels(self, channel_index: Union[List[int], List[str]]) -> List[str]:
+    def get_channels(self, channel_index: list[int] | list[str]) -> list[str]:
         """
         Resolve a mix of channel indices and channel names to channel names.
 
@@ -368,7 +368,7 @@ class WorkspaceInterpreter:
         ]
 
     def inject_signal(
-        self, channel: str, data: List[float], modifiers: Optional[List[Dict]] = None
+        self, channel: str, data: list[float], modifiers: list[dict] | None = None
     ) -> None:
         """
         Register a signal injection in one channel of the workspace.
@@ -420,7 +420,7 @@ class WorkspaceInterpreter:
         )
 
     @property
-    def signal_per_channel(self) -> Dict[str, List[float]]:
+    def signal_per_channel(self) -> dict[str, list[float]]:
         """
         Currently registered signal yields, keyed by channel name.
 
@@ -431,7 +431,7 @@ class WorkspaceInterpreter:
         """
         return self._signal_dict
 
-    def make_patch(self) -> List[Dict]:
+    def make_patch(self) -> list[dict]:
         """
         Convert the registered signal injections and removals into a ``JSONPatch``.
 
@@ -474,7 +474,7 @@ class WorkspaceInterpreter:
         self._signal_dict = {}
         self._to_remove = []
 
-    def add_patch(self, signal_patch: List[Dict]) -> None:
+    def add_patch(self, signal_patch: list[dict]) -> None:
         """
         Replace the current signal configuration with one read from a ``JSONPatch``.
 
@@ -508,7 +508,7 @@ class WorkspaceInterpreter:
             )
 
     @property
-    def remove_list(self) -> List[str]:
+    def remove_list(self) -> list[str]:
         """
         Names of channels marked for removal from the model.
 
@@ -521,11 +521,11 @@ class WorkspaceInterpreter:
         return self._to_remove
 
     def patch_to_map(
-        self, signal_patch: List[Dict], return_remove_list: bool = False
-    ) -> Union[
-        Tuple[Dict[str, List[float]], Dict[str, List[Dict]], List[str]],
-        Tuple[Dict[str, List[float]], Dict[str, List[Dict]]],
-    ]:
+        self, signal_patch: list[dict], return_remove_list: bool = False
+    ) -> (
+        tuple[dict[str, list[float]], dict[str, list[dict]], list[str]]
+        | tuple[dict[str, list[float]], dict[str, list[dict]]]
+    ):
         """
         Convert a ``JSONPatch`` document into the internal signal map.
 
@@ -625,7 +625,7 @@ class WorkspaceInterpreter:
     def scale_systematics(
         self,
         fraction: float,
-        modifier_types: Optional[List[str]] = None,
+        modifier_types: list[str] | None = None,
     ) -> "WorkspaceInterpreter":
         """
         Return a copy in which systematic-uncertainty deviations are rescaled.
@@ -703,7 +703,7 @@ class WorkspaceInterpreter:
 
     def summary(
         self,
-        measurement_name: Optional[str] = None,
+        measurement_name: str | None = None,
         show_samples: bool = False,
         show_modifiers: bool = False,
         max_channels: int = 50,
@@ -777,7 +777,7 @@ class WorkspaceInterpreter:
                 samples = ch.get("samples", [])
                 n_samples = len(samples)
 
-                mod_counts: Dict[str, int] = {}
+                mod_counts: dict[str, int] = {}
                 for s in samples:
                     for m in s.get("modifiers", []):
                         mod_counts[m["type"]] = mod_counts.get(m["type"], 0) + 1

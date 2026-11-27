@@ -41,7 +41,7 @@ First Steps
 
 ``"pyhf"`` accessor enables user to access all ``pyhf``'s likelihood building capabilities.
 The function of this accessor accepts a background-only statistical model dictionary as described
-in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.7.2/likelihood.html>`_. Additionally,
+in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.8.0/likelihood.html>`_. Additionally,
 a signal patch sample needs to be provided. An example of these two can be found below.
 
 .. code-block:: python3
@@ -108,7 +108,7 @@ applies to ``pyhf`` plug-in.
 
  * ``background_only_model``: This background-only model dictionary includes information about
    background yields, uncertainties and observations. Details on constructing these dictionaries can be
-   found in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.7.2/likelihood.html>`_.
+   found in `pyhf's online documentation <https://pyhf.readthedocs.io/en/v0.8.0/likelihood.html>`_.
  * ``signal_patch``: This signal patch includes dictionaries describing which regions will be added or
    removed from the statistical model.
  * ``analysis`` (optional): Unique identifier for the analysis.
